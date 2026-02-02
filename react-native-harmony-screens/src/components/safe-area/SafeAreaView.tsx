@@ -6,7 +6,7 @@ import React from 'react';
 import { SafeAreaViewProps } from './SafeAreaView.types';
 import SafeAreaViewNativeComponent, {
   NativeProps as SafeAreaViewNativeComponentProps,
-} from '../../fabric/safe-area/SafeAreaViewNativeComponent';
+} from '../../specs/SafeAreaViewNativeComponent';
 import { StyleSheet } from 'react-native';
 
 function SafeAreaView(props: SafeAreaViewProps) {
