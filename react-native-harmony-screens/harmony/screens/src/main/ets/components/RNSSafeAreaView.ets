@@ -78,7 +78,7 @@ export struct RNSSafeAreaView {
         // this.newInsetType = SafeAreaType.INTERFACE; //不支持
         break;
       default:
-        // this.newInsetType = SafeAreaType.All;
+        // this.newInsetType = SafeAreaType.All;//不支持
     }
   }
 
