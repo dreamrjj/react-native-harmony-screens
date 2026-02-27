@@ -86,6 +86,8 @@ export struct RNSScreen {
   public screenPropsChange: (replaceAnimation: string, presentation: string,
     transitionDuration: number | undefined) => void = (r: string, p: string, t: number | undefined) => {
   };
+  public backPressedChange: (screenTag: number| undefined, backPressedFlag: boolean) => void = (tag: number| undefined, flag: boolean)=>{}
+  private backPressedFlag: boolean = false; // 返回按钮或系统返回触发标志
   private gestureEnabled: boolean = false;
   private fullScreenSwipeEnabled: boolean = false;
   private customAnimationOnSwipe: boolean = false;
@@ -611,6 +613,7 @@ export struct RNSScreen {
   }
 
   private backBtnPressed() {
+    this.stackController?.pop();
     this.backPressed();
   }
 
@@ -679,17 +682,13 @@ export struct RNSScreen {
 
   private backPressed() {
     let pathArray = this.stackController?.getAllPathName();
-    if (pathArray?.length && pathArray?.length > 1) {
-      if (this.preventNativeDismiss) {
-        this.eventEmitter!.emit("nativeDismissCancelled", {
-          dismissCount: this.dismissCount
-        })
-      } else {
-        this.eventEmitter!.emit("dismissed", {
-          dismissCount: this.dismissCount
-        })
-        this.eventEmitter!.emit("headerBackButtonClicked", {});
-      }
+    if(!this.preventNativeDismiss) {
+      this.backPressedFlag = true;
+      this.backPressedChange(this.tag, this.backPressedFlag);
+    } else if (pathArray?.length && pathArray?.length > 1) {
+      this.eventEmitter!.emit("nativeDismissCancelled", {
+        dismissCount: this.dismissCount
+      })
     }
   }
 
