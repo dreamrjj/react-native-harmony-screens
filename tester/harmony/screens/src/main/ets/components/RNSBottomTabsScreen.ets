@@ -101,6 +101,9 @@ export struct RNSBottomTabsScreen {
   }
 
   onDescriptorChange() {
+    if (!this.descriptor) {
+      return;
+    }
 
     const tabKeyValue = this.descriptor.rawProps['tabKey'] as string | undefined
     if (tabKeyValue !== undefined) {
@@ -170,6 +173,9 @@ export struct RNSBottomTabsScreen {
   }
 
   onPageShow() {
+    if (!this.descriptor) {
+      return
+    }
     if (!this.nativeViewIsVisible) {
       this.nativeViewIsVisible = true
       this.emitDidAppear()
@@ -219,7 +225,6 @@ export struct RNSBottomTabsScreen {
 
   private setScreenOrientation() {
     if (!this.descriptor) {
-      console.log('RNSBottomTabsScreen setScreenOrientation: descriptor is null')
       return
     }
 
@@ -256,7 +261,6 @@ export struct RNSBottomTabsScreen {
   }
 
   private applyOrientation(orientationTmp: number) {
-    // 如果方向没有变化，直接返回，避免重复设置
     if (this.lastAppliedOrientation === orientationTmp) {
       console.log('RNSBottomTabsScreen applyOrientation: orientation not changed, skipping. value=' + orientationTmp)
       return

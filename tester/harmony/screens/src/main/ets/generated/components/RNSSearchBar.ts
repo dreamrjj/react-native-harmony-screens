@@ -58,6 +58,7 @@ export namespace RNSSearchBar {
     inputType?: string;
     hintTextColor?: ColorValue;
     headerIconColor?: ColorValue;
+    autoFocus?: boolean;
     shouldShowHintSearchIcon?: boolean;
   }
   

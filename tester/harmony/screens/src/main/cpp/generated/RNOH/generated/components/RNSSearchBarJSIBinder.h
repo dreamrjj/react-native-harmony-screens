@@ -48,6 +48,7 @@ class RNSSearchBarJSIBinder : public ViewComponentJSIBinder {
         object.setProperty(rt, "inputType", true);
         object.setProperty(rt, "hintTextColor", true);
         object.setProperty(rt, "headerIconColor", true);
+        object.setProperty(rt, "autoFocus", true);
         object.setProperty(rt, "shouldShowHintSearchIcon", true);
         return object;
     }

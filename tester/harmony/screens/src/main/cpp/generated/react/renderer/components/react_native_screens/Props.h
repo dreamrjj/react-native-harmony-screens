@@ -714,6 +714,7 @@ class RNSSearchBarProps final : public ViewProps {
   std::string inputType{};
   SharedColor hintTextColor{};
   SharedColor headerIconColor{};
+  bool autoFocus{false};
   bool shouldShowHintSearchIcon{true};
 };
 

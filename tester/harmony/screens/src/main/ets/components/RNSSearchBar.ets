@@ -50,7 +50,10 @@ export struct RNSSearchBar {
   @State headerIconColor: string | undefined = undefined
   @State shouldShowHintSearchIcon: boolean = true;
   @State tintColor: string = '';
+  @State autoFocus: boolean = true;
+  @State autoCapitalize: string = 'none';
   private cleanupCommandCallback?: () => void = undefined;
+  private searchController: SearchController = new SearchController();
 
   aboutToAppear() {
     this.eventEmitter = new RNC.RNSSearchBar.EventEmitter(this.ctx.rnInstance, this.tag)
@@ -87,11 +90,11 @@ export struct RNSSearchBar {
         } else if (command === 'clearText') {
           this.text = "";
         } else if (command === 'toggleCancelButton') {
-            if (args.toString() == 'true') {
-              this.cancelIconVisiblilty = Visibility.Visible;
-            } else {
-              this.cancelIconVisiblilty = Visibility.None;
-            }
+          if (args.toString() == 'true') {
+            this.cancelIconVisiblilty = Visibility.Visible;
+          } else {
+            this.cancelIconVisiblilty = Visibility.None;
+          }
         } else if (command === 'cancelSearch') {
           this.cancelSearch();
         }
@@ -121,6 +124,23 @@ export struct RNSSearchBar {
     this.headerIconColor = this.descriptor.rawProps["headerIconColor"];
     this.shouldShowHintSearchIcon = this.descriptor.rawProps["shouldShowHintSearchIcon"];
     this.tintColor = this.descriptor.rawProps["tintColor"];
+    this.autoFocus = this.descriptor.rawProps["autoFocus"];
+    const rawAutoCapitalize = this.descriptor.rawProps["autoCapitalize"] as string | undefined;
+    this.autoCapitalize = (rawAutoCapitalize === 'none' || rawAutoCapitalize === 'words' ||
+      rawAutoCapitalize === 'sentences' || rawAutoCapitalize === 'characters') ? rawAutoCapitalize : 'none';
+  }
+
+  getAutoCapitalizationMode(): AutoCapitalizationMode {
+    switch (this.autoCapitalize) {
+      case 'words':
+        return AutoCapitalizationMode.WORDS;
+      case 'sentences':
+        return AutoCapitalizationMode.SENTENCES;
+      case 'characters':
+        return AutoCapitalizationMode.ALL_CHARACTERS;
+      default:
+        return AutoCapitalizationMode.NONE;
+    }
   }
 
   aboutToDisappear() {
@@ -153,32 +173,40 @@ export struct RNSSearchBar {
       Row() {
         if (this.showTextInput) {
           Row() {
-            Search({ placeholder: this.placeholder, value: this.text })
+            Search({ placeholder: this.placeholder, value: this.text, controller: this.searchController })
               .layoutWeight(1)
               .fontColor(this.fontColor)
               .caretStyle({color: this.tintColor})
               .placeholderColor(this.hintTextColor)
               .searchIcon({ color: this.headerIconColor, size: this.shouldShowHintSearchIcon?16:0 })
               .backgroundColor(this.backgroundColorValue)
-	            .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
+              .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
               .type(this.type)
               .focusable(true)
+              .autoCapitalizationMode(this.getAutoCapitalizationMode())
               .onChange((value: string) => {
-              this.text = value
-              this.eventEmitter!.emit("changeText", { text: value })
-            })
-            .onFocus(() => {
-              this.eventEmitter!.emit("searchFocus", {})
-            })
-            .onBlur(() => {
-              this.eventEmitter!.emit("searchBlur", {})
-            })
-            .onSubmit(() => {
-              this.eventEmitter?.emit("searchButtonPress", {
-                text: this.text
+                this.text = value
+                this.eventEmitter!.emit("changeText", { text: value })
+              })
+              .onFocus(() => {
+                this.eventEmitter!.emit("searchFocus", {})
+              })
+              .onBlur(() => {
+                this.eventEmitter!.emit("searchBlur", {})
+              })
+              .onSubmit(() => {
+                this.eventEmitter?.emit("searchButtonPress", {
+                  text: this.text
                 })
               })
-            .id("search")
+              .id("search")
+              .onAppear(() => {
+                if (this.autoFocus) {
+                  setTimeout(() => {
+                    this.getUIContext().getFocusController().requestFocus("search");
+                  }, 50);
+                }
+              })
             Text(this.cancelButtonText)
               .fontColor(this.tintColor)
               .padding({ left: 5 })
@@ -197,6 +225,8 @@ export struct RNSSearchBar {
             this.showTextInput = true;
             this.eventEmitter!.emit("open", {})
           })
+
+          // TextInput().autoCapitalizationMode(this.getAutoCapitalizationMode()).margin({left: 60})
         }
       }.justifyContent(FlexAlign.End)
     }
@@ -205,5 +235,17 @@ export struct RNSSearchBar {
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.End)
     .layoutWeight(1)
+    .onAppear(() => {
+      this.onPageShow();
+    })
+  }
+
+  onPageShow(): void {
+    if (!this.descriptor) {
+      return;
+    }
+    if (this.autoFocus && !this.showTextInput) {
+      this.showTextInput = true;
+    }
   }
 }

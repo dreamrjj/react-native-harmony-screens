@@ -223,6 +223,7 @@ RNSSearchBarProps::RNSSearchBarProps(
     inputType(convertRawProp(context, rawProps, "inputType", sourceProps.inputType, {})),
     hintTextColor(convertRawProp(context, rawProps, "hintTextColor", sourceProps.hintTextColor, {})),
     headerIconColor(convertRawProp(context, rawProps, "headerIconColor", sourceProps.headerIconColor, {})),
+    autoFocus(convertRawProp(context, rawProps, "autoFocus", sourceProps.autoFocus, {})),
     shouldShowHintSearchIcon(convertRawProp(context, rawProps, "shouldShowHintSearchIcon", sourceProps.shouldShowHintSearchIcon, {true}))
       {}
 
