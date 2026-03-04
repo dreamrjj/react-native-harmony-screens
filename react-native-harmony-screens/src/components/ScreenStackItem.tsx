@@ -5,12 +5,13 @@ import {
   StyleSheet,
   type ViewStyle,
   View,
+  DeviceEventEmitter
 } from 'react-native';
 import warnOnce from 'warn-once';
 
 import DebugContainer from 'react-native-screens/src/components/DebugContainer';
-import { 
-  ScreenProps, 
+import {
+  ScreenProps,
   ScreenStackHeaderConfigProps,
   StackPresentationTypes,
 } from 'react-native-screens/src/types';
@@ -55,7 +56,7 @@ function ScreenStackItem(
 
   const isHeaderInModal =
     Platform.OS === 'android'
-      ? false      
+      ? false
       : stackPresentation !== 'push' && headerConfig?.hidden === false;
 
   const headerHiddenPreviousRef = React.useRef(headerConfig?.hidden);
@@ -63,8 +64,8 @@ function ScreenStackItem(
   React.useEffect(() => {
     warnOnce(
       Platform.OS !== 'android' &&
-        stackPresentation !== 'push' &&
-        headerHiddenPreviousRef.current !== headerConfig?.hidden,
+      stackPresentation !== 'push' &&
+      headerHiddenPreviousRef.current !== headerConfig?.hidden,
       `Dynamically changing header's visibility in modals will result in remounting the screen and losing all local state.`,
     );
 
@@ -91,47 +92,51 @@ function ScreenStackItem(
     contentStyle = contentWrapperStyles;
   }
 
+  DeviceEventEmitter.emit('EVENT_HEADERCONFIG', {
+    translucent: headerConfig?.translucent,
+    hidden: !headerConfig?.hidden,
+  });
+
+  const [topEdges, setTopEdges] = React.useState(false);
+  React.useEffect(() => {
+    const unsubscribe = DeviceEventEmitter.addListener('EVENT_TOPEDGE', (data) => {
+      if (data?.topEdges != undefined) {
+        queueMicrotask(() => {
+          setTopEdges(data?.topEdges);
+        });
+      }
+    });
+    return () => unsubscribe.remove();
+  })
+
   const shouldUseSafeAreaView =
-    Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 26;
+    // @ts-ignore
+    (Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 26) || Platform.OS === 'harmony';
   const content = (
     <>
+
       <DebugContainer
         contentStyle={contentStyle}
         style={debugContainerStyle}
-        stackPresentation={stackPresentation ?? 'push'}>
+        stackPresentation={stackPresentation ?? 'push'}
+      >
+
         {shouldUseSafeAreaView ? (
-          <SafeAreaView edges={getSafeAreaEdges(headerConfig)}>
-            <View 
-            // style={debugContainerStyle}
-            style={[
-              stackPresentation === 'formSheet'
-                ? Platform.OS === 'ios'
-                  ? styles.absolute
-                  : null
-                : styles.container, 
-              contentStyle,
-            ]}
+          <SafeAreaView>
+            <View
+              style={[debugContainerStyle, contentStyle, getTopPadding(headerConfig, topEdges)]}
             >
-            {children}
-          </View> 
-            {/* {children} */}
+              {children}
+            </View>
           </SafeAreaView>
         ) : (
           // children  
-          <View 
-            // style={debugContainerStyle}
-            style={[
-              stackPresentation === 'formSheet'
-                ? Platform.OS === 'ios'
-                  ? styles.absolute
-                  : null
-                : styles.container, 
-              contentStyle,
-            ]}
-            >
+          <View
+            style={[debugContainerStyle, contentStyle]}
+          >
             {children}
-          </View>  
-        )}     
+          </View>
+        )}
 
       </DebugContainer>
 
@@ -158,16 +163,16 @@ function ScreenStackItem(
     <Screen
       ref={node => {
         currentScreenRef.current = node;
-    
+
         if (screenRefs === null) {
           console.warn(
             'Looks like RNSScreensRefContext is missing. Make sure the ScreenStack component is wrapped in it',
           );
           return;
         }
-    
+
         const currentRefs = screenRefs.current;
-    
+
         if (node === null) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete currentRefs[screenId];
@@ -194,12 +199,12 @@ function ScreenStackItem(
             activityState={activityState}
             shouldFreeze={shouldFreeze}
             hasLargeHeader={headerConfig?.largeTitle ?? false}
-            style={StyleSheet.absoluteFill}> 
-            {content}            
+            style={StyleSheet.absoluteFill}>
+            {content}
           </Screen>
         </ScreenStack>
       ) : (
-        content        
+        content
       )}
     </Screen>
   );
@@ -257,6 +262,28 @@ function extractScreenStyles(style: StyleProp<ViewStyle>): SplitStyleResult {
     screenStyles,
     contentWrapperStyles,
   };
+}
+
+
+function getTopPadding(
+  headerConfig?: ScreenStackHeaderConfigProps,
+  topEdges?: boolean
+): {} {
+  // @ts-ignore
+  if (Platform.OS === 'harmony') {
+    if (headerConfig?.translucent && headerConfig?.hidden) {
+      return { paddingTop: -58 }
+    } else if (headerConfig?.translucent && !headerConfig?.hidden) {
+      if (topEdges != undefined && !topEdges) {
+        return { paddingTop: 0 }
+      } else if (topEdges != undefined && topEdges) {
+        return { paddingTop: 58 }
+      }
+    } else {
+      return {};
+    }
+  }
+  return {};
 }
 
 function getSafeAreaEdges(
