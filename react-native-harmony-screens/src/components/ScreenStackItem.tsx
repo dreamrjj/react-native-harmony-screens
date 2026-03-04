@@ -286,7 +286,7 @@ function getTopPadding(
   return {};
 }
 
-function getSafeAreaEdges(
+export function getSafeAreaEdges(
   headerConfig?: ScreenStackHeaderConfigProps,
 ): SafeAreaViewProps['edges'] {
   if (Platform.OS !== 'ios' || parseInt(Platform.Version, 10) < 26) {
