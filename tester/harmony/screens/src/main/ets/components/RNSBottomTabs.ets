@@ -87,6 +87,8 @@ interface TabBarItemInfo {
   tabBarBlurEffect?: string | undefined
   systemItem?: string
   specialEffects?: SpecialEffects
+  tabBarBackgroundColor?: string
+  tabBarShadowColor?: string
 }
 
 interface GeneratedTypeLiteralInterface_1 {
@@ -256,7 +258,7 @@ export struct RNSBottomTabs {
       if (childDescriptor) {
         const tabKeyValue = childDescriptor.rawProps['tabKey'] as string | undefined
         const titleValue = childDescriptor.rawProps['title'] as string | undefined
-        const badgeValueValue = childDescriptor.rawProps['badgeValue'] as string | undefined
+        const badgeValue = childDescriptor.rawProps['badgeValue'] as string | undefined
         const iconTypeValue = childDescriptor.rawProps['iconType'] as string | undefined
         const badgeTextColor = childDescriptor.rawProps['tabBarItemBadgeTextColor'] as string | undefined
 
@@ -309,6 +311,9 @@ export struct RNSBottomTabs {
         let selectedAppearance: ItemStateAppearance | undefined = undefined
         let tabBarBlurEffect: string | undefined = undefined
 
+        let tabBarBackgroundColorItem: string | undefined = undefined
+        let tabBarShadowColorItem: string | undefined = undefined
+
         const standardAppearanceRaw = childDescriptor.rawProps['standardAppearance'] as Appearance | undefined
         const scrollEdgeAppearanceRaw = childDescriptor.rawProps['scrollEdgeAppearance'] as Appearance | undefined
         const appearanceToUse = standardAppearanceRaw || scrollEdgeAppearanceRaw
@@ -321,10 +326,10 @@ export struct RNSBottomTabs {
               (itemAppearance.selected || itemAppearance.focused) as ItemStateAppearance | undefined
           }
           if (appearanceToUse.tabBarBackgroundColor) {
-            this.tabBarBackgroundColor = convertColorValueToHex(appearanceToUse.tabBarBackgroundColor) || "#FFFFFF"
+            tabBarBackgroundColorItem = convertColorValueToHex(appearanceToUse.tabBarBackgroundColor) || "#FFFFFF"
           }
           if (appearanceToUse.tabBarShadowColor) {
-            this.tabBarShadowColor = convertColorValueToHex(appearanceToUse.tabBarShadowColor) || ""
+            tabBarShadowColorItem = convertColorValueToHex(appearanceToUse.tabBarShadowColor) || ""
           }
           if (appearanceToUse.tabBarBlurEffect) {
             tabBarBlurEffect = appearanceToUse.tabBarBlurEffect
@@ -348,7 +353,7 @@ export struct RNSBottomTabs {
             tag: childTag,
             tabKey: tabKeyValue,
             title: titleValue || "",
-            badgeValue: badgeValueValue || "",
+            badgeValue: badgeValue || "",
             iconUri: iconUri,
             selectedIconUri: selectedIconUri,
             iconType: iconTypeValue || "image",
@@ -359,7 +364,9 @@ export struct RNSBottomTabs {
             badgeTextColor: badgeTextColor,
             tabBarBlurEffect: tabBarBlurEffect,
             systemItem: systemItemValue,
-            specialEffects: specialEffects
+            specialEffects: specialEffects,
+            tabBarBackgroundColor: tabBarBackgroundColorItem,
+            tabBarShadowColor: tabBarShadowColorItem,
           })
         } else {
           console.warn('RNSBottomTabs updateTabBarItems child ' + i + ' has no tabKey, skipping')
@@ -513,12 +520,12 @@ export struct RNSBottomTabs {
       }
       .width('100%')
       .height(56)
-      .backgroundColor(this.tabBarBackgroundColor)
+      .backgroundColor(this.getCurrentTabBarBackgroundColor())
       .justifyContent(FlexAlign.SpaceAround)
       .alignItems(VerticalAlign.Center)
       .shadow({
-        radius: this.tabBarShadowColor !== "" ? 4 : 0,
-        color: this.tabBarShadowColor !== "" ? this.tabBarShadowColor : Color.Transparent,
+        radius: this.getCurrentTabBarShadowColor() !== "" ? 4 : 0,
+        color: this.getCurrentTabBarShadowColor() !== "" ? this.getCurrentTabBarShadowColor() : Color.Transparent,
         offsetX: 0,
         offsetY: -2
       })
@@ -739,6 +746,26 @@ export struct RNSBottomTabs {
       return "#FFFFFF"
     }
     return badgeTextColor === null ? "#FFFFFF" : badgeTextColor
+  }
+
+  getCurrentTabBarBackgroundColor(): string {
+    if (this.tabBarItems.length > 0 && this.selectedIndex >= 0 && this.selectedIndex < this.tabBarItems.length) {
+      const item = this.tabBarItems[this.selectedIndex]
+      if (item.tabBarBackgroundColor) {
+        return item.tabBarBackgroundColor
+      }
+    }
+    return this.tabBarBackgroundColor ?? "#FFFFFF"
+  }
+
+  getCurrentTabBarShadowColor(): string {
+    if (this.tabBarItems.length > 0 && this.selectedIndex >= 0 && this.selectedIndex < this.tabBarItems.length) {
+      const item = this.tabBarItems[this.selectedIndex]
+      if (item.tabBarShadowColor !== undefined && item.tabBarShadowColor !== "") {
+        return item.tabBarShadowColor
+      }
+    }
+    return this.tabBarShadowColor ?? ""
   }
 
   @Builder

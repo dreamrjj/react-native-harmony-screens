@@ -58,11 +58,10 @@ export struct RNSBottomTabsScreen {
   @State iconSfSymbolName: string = ""
   private selectedIconImageSource?: imageUriInterface
   @State selectedIconSfSymbolName: string = ""
-  @State orientation: string = "inherit"
+  @State orientation: string = "default"
   @State nativeViewIsVisible: boolean = false
   @State isFocused: boolean = false
   @State lifecycleState: number = 0
-  // 记录上一次真正下发到 window 的方向，避免同一个值被重复设置导致多次旋转动画
   private lastAppliedOrientation: number = -1
 
 
@@ -141,11 +140,9 @@ export struct RNSBottomTabsScreen {
     }
 
     const orientationValue = this.descriptor.rawProps['orientation'] as string | undefined
-    const newOrientation = orientationValue !== undefined ? (orientationValue || "inherit") : "inherit"
+    const newOrientation = orientationValue !== undefined ? orientationValue : "default"
     const orientationChanged = this.orientation !== newOrientation
     this.orientation = newOrientation
-
-
     if (orientationChanged && this.isFocused) {
       this.setScreenOrientation()
     }
@@ -226,7 +223,7 @@ export struct RNSBottomTabsScreen {
       return
     }
 
-    if (!this.orientation || this.orientation === "inherit") {
+    if (!this.orientation || this.orientation === "default") {
       console.log('RNSBottomTabsScreen setScreenOrientation: orientation is inherit/undefined, using default (UNSPECIFIED)')
       this.restoreDefaultOrientation()
       return
