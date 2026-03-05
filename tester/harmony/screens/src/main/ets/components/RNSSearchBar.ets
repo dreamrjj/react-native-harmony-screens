@@ -126,11 +126,12 @@ export struct RNSSearchBar {
     this.tintColor = this.descriptor.rawProps["tintColor"];
     this.autoFocus = this.descriptor.rawProps["autoFocus"];
     const rawAutoCapitalize = this.descriptor.rawProps["autoCapitalize"] as string | undefined;
-    this.autoCapitalize = (rawAutoCapitalize === 'none' || rawAutoCapitalize === 'words' ||
-      rawAutoCapitalize === 'sentences' || rawAutoCapitalize === 'characters') ? rawAutoCapitalize : 'none';
+    this.autoCapitalize =
+      (rawAutoCapitalize === 'systemDefault' || rawAutoCapitalize === 'none' || rawAutoCapitalize === 'words' ||
+        rawAutoCapitalize === 'sentences' || rawAutoCapitalize === 'characters') ? rawAutoCapitalize : 'none';
   }
 
-  getAutoCapitalizationMode(): AutoCapitalizationMode {
+  getAutoCapitalizationMode(): AutoCapitalizationMode | undefined {
     switch (this.autoCapitalize) {
       case 'words':
         return AutoCapitalizationMode.WORDS;
@@ -138,8 +139,10 @@ export struct RNSSearchBar {
         return AutoCapitalizationMode.SENTENCES;
       case 'characters':
         return AutoCapitalizationMode.ALL_CHARACTERS;
-      default:
+      case 'none':
         return AutoCapitalizationMode.NONE;
+      default:
+        return undefined; // 表示不设置参数
     }
   }
 

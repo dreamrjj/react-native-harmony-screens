@@ -45,9 +45,9 @@ export namespace RNSSearchBar {
 
   export interface DirectRawProps {
     hideWhenScrolling?: boolean;
-    autoCapitalize?: 'none' | 'words' | 'sentences' | 'characters';
+    autoCapitalize?: 'systemDefault' | 'none' | 'words' | 'sentences' | 'characters';
     placeholder?: string;
-    placement?: 'automatic' | 'inline' | 'stacked';
+    placement?: 'automatic' | 'inline' | 'stacked' | 'integrated' | 'integratedButton' | 'integratedCentered';
     obscureBackground?: boolean;
     hideNavigationBar?: boolean;
     cancelButtonText?: string;

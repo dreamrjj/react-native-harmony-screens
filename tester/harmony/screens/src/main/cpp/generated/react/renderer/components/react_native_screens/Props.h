@@ -656,10 +656,11 @@ class RNSScreenStackProps final : public ViewProps {
   
 };
 
-enum class RNSSearchBarAutoCapitalize { None, Words, Sentences, Characters };
+enum class RNSSearchBarAutoCapitalize { Systemdefault, None, Words, Sentences, Characters };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSearchBarAutoCapitalize &result) {
   auto string = (std::string)value;
+  if (string == "systemDefault") { result = RNSSearchBarAutoCapitalize::Systemdefault; return; }
   if (string == "none") { result = RNSSearchBarAutoCapitalize::None; return; }
   if (string == "words") { result = RNSSearchBarAutoCapitalize::Words; return; }
   if (string == "sentences") { result = RNSSearchBarAutoCapitalize::Sentences; return; }
@@ -669,19 +670,23 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
 
 static inline std::string toString(const RNSSearchBarAutoCapitalize &value) {
   switch (value) {
+    case RNSSearchBarAutoCapitalize::Systemdefault: return "systemDefault";
     case RNSSearchBarAutoCapitalize::None: return "none";
     case RNSSearchBarAutoCapitalize::Words: return "words";
     case RNSSearchBarAutoCapitalize::Sentences: return "sentences";
     case RNSSearchBarAutoCapitalize::Characters: return "characters";
   }
 }
-enum class RNSSearchBarPlacement { Automatic, Inline, Stacked };
+enum class RNSSearchBarPlacement { Automatic, Inline, Stacked, Integrated, IntegratedButton, IntegratedCentered };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSearchBarPlacement &result) {
   auto string = (std::string)value;
   if (string == "automatic") { result = RNSSearchBarPlacement::Automatic; return; }
   if (string == "inline") { result = RNSSearchBarPlacement::Inline; return; }
   if (string == "stacked") { result = RNSSearchBarPlacement::Stacked; return; }
+  if (string == "integrated") { result = RNSSearchBarPlacement::Integrated; return; }
+  if (string == "integratedButton") { result = RNSSearchBarPlacement::IntegratedButton; return; }
+  if (string == "integratedCentered") { result = RNSSearchBarPlacement::IntegratedCentered; return; }
   abort();
 }
 
@@ -690,6 +695,9 @@ static inline std::string toString(const RNSSearchBarPlacement &value) {
     case RNSSearchBarPlacement::Automatic: return "automatic";
     case RNSSearchBarPlacement::Inline: return "inline";
     case RNSSearchBarPlacement::Stacked: return "stacked";
+    case RNSSearchBarPlacement::Integrated: return "integrated";
+    case RNSSearchBarPlacement::IntegratedButton: return "integratedButton";
+    case RNSSearchBarPlacement::IntegratedCentered: return "integratedCentered";
   }
 }
 
