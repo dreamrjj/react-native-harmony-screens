@@ -32,7 +32,7 @@ import { bottomTabsDebugLog } from '../../private/logging';
 /**
  * EXPERIMENTAL API, MIGHT CHANGE W/O ANY NOTICE
  */
-function BottomTabsScreen(props: BottomTabsScreenProps) {
+export function BottomTabsScreen(props: BottomTabsScreenProps) {
   const componentNodeRef = React.useRef<React.Component<NativeProps>>(null);
   const componentNodeHandle = React.useRef<number>(-1);
 
