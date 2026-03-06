@@ -78,10 +78,12 @@ export struct RNSStackScreen {
       }
       else if (oldState === 0 && maxLifecycleStateValue === 2) {
         this.emitWillAppear();
+        this.emitDidAppear();
         this.nativeViewIsVisible = true;
       }
       else if (oldState === 1 && maxLifecycleStateValue === 2) {
         this.emitWillAppear();
+        this.emitDidAppear();
         this.nativeViewIsVisible = true;
       }
       else if (oldState === 2 && maxLifecycleStateValue === 1) {
