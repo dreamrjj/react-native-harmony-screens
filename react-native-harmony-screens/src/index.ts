@@ -40,8 +40,6 @@ export { default as FullWindowOverlay } from "./components/FullWindowOverlay";
 export { default as ScreenFooter } from './components/ScreenFooter';
 // export { default as BottomTabs } from './components/bottom-tabs/BottomTabs';
 // export { default as BottomTabsScreen } from './components/bottom-tabs/BottomTabsScreen';
-export { default as SplitViewScreen } from './components/gamma/split-view/SplitViewScreen';
-export { default as ScreenStackHost } from './components/gamma/stack/ScreenStackHost';
 export { default as ScreenContentWrapper } from './components/ScreenContentWrapper';
 export { default as SafeAreaView } from './components/safe-area/SafeAreaView';
 
