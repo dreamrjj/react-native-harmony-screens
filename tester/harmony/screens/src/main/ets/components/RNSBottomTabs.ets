@@ -27,10 +27,10 @@ import {
   convertColorValueToHex,
   Descriptor,
   RNComponentContext,
-  RNViewBase,
+  RNViewBase
 } from '@rnoh/react-native-openharmony';
 import { RNC } from '../generated/ts';
-import { RNSBottomTabsScreenDescriptor } from './RNSBottomTabsScreen';
+import { RNSBottomTabsScreen, RNSBottomTabsScreenDescriptor } from './RNSBottomTabsScreen';
 import { obtainImageInfoFromPath } from '../utils/Utils';
 import { image } from '@kit.ImageKit';
 
@@ -88,6 +88,9 @@ interface TabBarItemInfo {
   tabBarBlurEffect?: string | undefined
   systemItem?: string
   specialEffects?: SpecialEffects
+  tabBarBackgroundColor?: string
+  tabBarShadowColor?: string
+  isFocused?: boolean | false
 }
 
 interface GeneratedTypeLiteralInterface_1 {
@@ -111,7 +114,6 @@ export struct RNSBottomTabs {
   @State private focusedTabKey: string = ""
   @State private selectedIndex: number = 0
   @State private tabBarItems: TabBarItemInfo[] = []
-  @State private contentSlotTag: number = -1
   // Appearance props
   @State tabBarBackgroundColor: string | undefined = undefined;
   @State tabBarItemTitleFontFamily: string = ""
@@ -135,6 +137,8 @@ export struct RNSBottomTabs {
   @State rippleOpacity: number = 0
   @State rippleScale: number = 0
   @State currentRippleIndex: number = -1
+
+  @State private contentSlotTag: number = -1
 
   aboutToAppear() {
     this.eventEmitter = new RNC.RNSBottomTabs.EventEmitter(this.ctx.rnInstance, this.tag)
@@ -226,11 +230,9 @@ export struct RNSBottomTabs {
     if (tabBarControllerModeValue !== undefined) {
       this.tabBarControllerMode = tabBarControllerModeValue || "automatic"
     }
-    const controlNavigationStateInJSValue =
-      this.descriptor.rawProps['controlNavigationStateInJS'] as boolean | undefined
-    if (controlNavigationStateInJSValue !== undefined) {
-      this.controlNavigationStateInJS = controlNavigationStateInJSValue === true
-    }
+    this.controlNavigationStateInJS = this.descriptor.rawProps['controlNavigationStateInJS'] as boolean
+
+    console.log("rjj----controlNavigationStateInJS" + this.controlNavigationStateInJS)
     let tabBarShadowColorValue : string | undefined = this.descriptor.rawProps['tabBarShadowColor'];
     if (this.tabBarShadowColor !== tabBarShadowColorValue) {
       this.tabBarShadowColor = tabBarShadowColorValue
@@ -257,11 +259,12 @@ export struct RNSBottomTabs {
       const childTag = this.children[i]
       const childDescriptor = this.ctx.descriptorRegistry.getDescriptor<RNSBottomTabsScreenDescriptor>(childTag)
       if (childDescriptor) {
-        const tabKeyValue = childDescriptor.rawProps['tabKey'] as string | undefined
+        const tabKeyValue = childDescriptor.rawProps['tabKey'] as string | ""
         const titleValue = childDescriptor.rawProps['title'] as string | undefined
-        const badgeValueValue = childDescriptor.rawProps['badgeValue'] as string | undefined
+        const badgeValue = childDescriptor.rawProps['badgeValue'] as string | undefined
         const iconTypeValue = childDescriptor.rawProps['iconType'] as string | undefined
         const badgeTextColor = childDescriptor.rawProps['tabBarItemBadgeTextColor'] as string | undefined
+        const isFocusedValue = childDescriptor.rawProps['isFocused'] as boolean | false
 
         const iconResourceValue =
           childDescriptor.rawProps['iconResource'] as GeneratedTypeLiteralInterface_1 | undefined
@@ -312,6 +315,9 @@ export struct RNSBottomTabs {
         let selectedAppearance: ItemStateAppearance | undefined = undefined
         let tabBarBlurEffect: string | undefined = undefined
 
+        let tabBarBackgroundColorItem: string | undefined = undefined
+        let tabBarShadowColorItem: string | undefined = undefined
+
         const standardAppearanceRaw = childDescriptor.rawProps['standardAppearance'] as Appearance | undefined
         const scrollEdgeAppearanceRaw = childDescriptor.rawProps['scrollEdgeAppearance'] as Appearance | undefined
         const appearanceToUse = standardAppearanceRaw || scrollEdgeAppearanceRaw
@@ -324,10 +330,10 @@ export struct RNSBottomTabs {
               (itemAppearance.selected || itemAppearance.focused) as ItemStateAppearance | undefined
           }
           if (appearanceToUse.tabBarBackgroundColor) {
-            this.tabBarBackgroundColor = convertColorValueToHex(appearanceToUse.tabBarBackgroundColor) || "#FFFFFF"
+            tabBarBackgroundColorItem = convertColorValueToHex(appearanceToUse.tabBarBackgroundColor) || "#FFFFFF"
           }
           if (appearanceToUse.tabBarShadowColor) {
-            this.tabBarShadowColor = convertColorValueToHex(appearanceToUse.tabBarShadowColor) || ""
+            tabBarShadowColorItem = convertColorValueToHex(appearanceToUse.tabBarShadowColor) || ""
           }
           if (appearanceToUse.tabBarBlurEffect) {
             tabBarBlurEffect = appearanceToUse.tabBarBlurEffect
@@ -355,7 +361,7 @@ export struct RNSBottomTabs {
               tag: childTag,
               tabKey: tabKeyValue,
               title: titleValue || "",
-              badgeValue: badgeValueValue || "",
+              badgeValue: badgeValue || "",
               iconUri: iconUri,
               selectedIconUri: selectedIconUri,
               iconType: iconTypeValue || "image",
@@ -366,7 +372,10 @@ export struct RNSBottomTabs {
               badgeTextColor: badgeTextColor,
               tabBarBlurEffect: tabBarBlurEffect,
               systemItem: systemItemValue,
-              specialEffects: specialEffects
+              specialEffects: specialEffects,
+              tabBarBackgroundColor: tabBarBackgroundColorItem,
+              tabBarShadowColor: tabBarShadowColorItem,
+              isFocused: isFocusedValue
             })
           }
         } else {
@@ -382,33 +391,22 @@ export struct RNSBottomTabs {
     if (this.tabBarItems.length === 0) {
       return
     }
-    // 当由 JS 侧控制导航状态时，优先根据子组件的 isFocused 来决定选中项
-    if (this.controlNavigationStateInJS) {
-      let focusedIndex: number = -1
-      for (let i = 0; i < this.tabBarItems.length; i++) {
-        const childTag = this.tabBarItems[i].tag
-        const childDescriptor = this.ctx.descriptorRegistry.getDescriptor<RNSBottomTabsScreenDescriptor>(childTag)
-        if (childDescriptor) {
-          const isFocusedValue = childDescriptor.rawProps['isFocused'] as boolean | undefined
-          if (isFocusedValue === true) {
-            focusedIndex = i
-            break
-          }
-        }
-      }
+    this.initSelectedItem()
+  }
 
-      if (focusedIndex >= 0) {
-        const item = this.tabBarItems[focusedIndex]
-        this.selectedIndex = focusedIndex
-        this.focusedTabKey = item.tabKey
-        console.log('RNSBottomTabs updateFocusedTab (JS-controlled), focusedIndex: ' + focusedIndex + ', focusedTabKey: ' + this.focusedTabKey)
-        this.emitFocusChangeEvent(this.focusedTabKey)
-        return
+  initSelectedItem(): void {
+    let foundIndex = -1
+    for (let i = 0; i < this.tabBarItems.length; i++) {
+      if (this.tabBarItems[i].isFocused) {
+        this.focusedTabKey = this.tabBarItems[i].tabKey
+        foundIndex = i
+        break
       }
     }
-
-    // 默认行为：如果还没有设置 focusedTabKey，则使用第一个 tab
-    if (!this.focusedTabKey) {
+    if (foundIndex >= 0) {
+      this.selectedIndex = foundIndex
+      this.emitFocusChangeEvent(this.focusedTabKey)
+    } else {
       const firstItem = this.tabBarItems[0]
       this.focusedTabKey = firstItem.tabKey
       this.selectedIndex = 0
@@ -432,14 +430,14 @@ export struct RNSBottomTabs {
           if (item.tabKey !== this.focusedTabKey) {
             this.focusedTabKey = item.tabKey
           }
+          // 即使在 JS 控制模式下，也要更新 selectedIndex 以确保 UI 状态同步
+          this.selectedIndex = index
           this.emitFocusChangeEvent(item.tabKey)
         } else {
           // 默认模式：在 native 侧直接更新 selectedIndex 和 focusedTabKey
           this.selectedIndex = index
-          if (item.tabKey !== this.focusedTabKey) {
-            this.focusedTabKey = item.tabKey
-            this.emitFocusChangeEvent(this.focusedTabKey)
-          }
+          this.focusedTabKey = item.tabKey
+          this.emitFocusChangeEvent(this.focusedTabKey)
         }
       }
     }
@@ -494,6 +492,7 @@ export struct RNSBottomTabs {
 
   build() {
     Column() {
+      // Content area
       Stack() {
         if (this.contentSlotTag >= 0) {
           RNViewBase({ ctx: this.ctx, tag: this.contentSlotTag }) {
@@ -529,12 +528,12 @@ export struct RNSBottomTabs {
       }
       .width('100%')
       .height(56)
-      .backgroundColor(this.tabBarBackgroundColor)
+      .backgroundColor(this.getCurrentTabBarBackgroundColor())
       .justifyContent(FlexAlign.SpaceAround)
       .alignItems(VerticalAlign.Center)
       .shadow({
-        radius: this.tabBarShadowColor !== "" ? 4 : 0,
-        color: this.tabBarShadowColor !== "" ? this.tabBarShadowColor : Color.Transparent,
+        radius: this.getCurrentTabBarShadowColor() !== "" ? 4 : 0,
+        color: this.getCurrentTabBarShadowColor() !== "" ? this.getCurrentTabBarShadowColor() : Color.Transparent,
         offsetX: 0,
         offsetY: -2
       })
@@ -755,6 +754,26 @@ export struct RNSBottomTabs {
       return "#FFFFFF"
     }
     return badgeTextColor === null ? "#FFFFFF" : badgeTextColor
+  }
+
+  getCurrentTabBarBackgroundColor(): string {
+    if (this.tabBarItems.length > 0 && this.selectedIndex >= 0 && this.selectedIndex < this.tabBarItems.length) {
+      const item = this.tabBarItems[this.selectedIndex]
+      if (item.tabBarBackgroundColor) {
+        return item.tabBarBackgroundColor
+      }
+    }
+    return this.tabBarBackgroundColor ?? "#FFFFFF"
+  }
+
+  getCurrentTabBarShadowColor(): string {
+    if (this.tabBarItems.length > 0 && this.selectedIndex >= 0 && this.selectedIndex < this.tabBarItems.length) {
+      const item = this.tabBarItems[this.selectedIndex]
+      if (item.tabBarShadowColor !== undefined && item.tabBarShadowColor !== "") {
+        return item.tabBarShadowColor
+      }
+    }
+    return this.tabBarShadowColor ?? ""
   }
 
   @Builder

@@ -62,8 +62,7 @@ export struct RNSBottomTabsScreen {
   @State nativeViewIsVisible: boolean = false
   @State isFocused: boolean = false
   @State lifecycleState: number = 0
-  // 记录上一次真正下发到 window 的方向，避免同一个值被重复设置导致多次旋转动画
-  private lastAppliedOrientation: number = -1
+  private static lastAppliedOrientationForWindow: number = -1
 
 
   aboutToAppear() {
@@ -103,7 +102,9 @@ export struct RNSBottomTabsScreen {
   }
 
   onDescriptorChange() {
-
+    if (!this.descriptor) {
+      return
+    }
     const tabKeyValue = this.descriptor.rawProps['tabKey'] as string | undefined
     if (tabKeyValue !== undefined) {
       this.tabKey = tabKeyValue || ""
@@ -143,13 +144,7 @@ export struct RNSBottomTabsScreen {
 
     const orientationValue = this.descriptor.rawProps['orientation'] as string | undefined
     const newOrientation = orientationValue !== undefined ? (orientationValue || "inherit") : "inherit"
-    const orientationChanged = this.orientation !== newOrientation
     this.orientation = newOrientation
-
-
-    if (orientationChanged && this.isFocused) {
-      this.setScreenOrientation()
-    }
 
     const isFocusedValue = this.descriptor.rawProps['isFocused'] as boolean | undefined
     if (isFocusedValue !== undefined) {
@@ -161,13 +156,11 @@ export struct RNSBottomTabsScreen {
           this.nativeViewIsVisible = true
         }
         this.emitWillAppear()
-        this.setScreenOrientation()
         if (this.nativeViewIsVisible) {
           this.setLifecycleState(2)
         }
       } else if (wasFocused && !isNowFocused) {
         this.emitWillDisappear()
-        this.restoreDefaultOrientation()
         if (this.nativeViewIsVisible) {
           this.setLifecycleState(0)
         }
@@ -176,6 +169,10 @@ export struct RNSBottomTabsScreen {
         }
       }
       this.isFocused = isNowFocused
+    }
+
+    if (this.isFocused && this.tabKey !== '__content__') {
+      this.setScreenOrientation()
     }
   }
 
@@ -186,8 +183,6 @@ export struct RNSBottomTabsScreen {
       if (this.isFocused) {
         this.setScreenOrientation()
         this.setLifecycleState(2)
-      } else {
-        this.setLifecycleState(0)
       }
     }
   }
@@ -229,12 +224,9 @@ export struct RNSBottomTabsScreen {
 
   private setScreenOrientation() {
     if (!this.descriptor) {
-      console.log('RNSBottomTabsScreen setScreenOrientation: descriptor is null')
       return
     }
-
     if (!this.orientation || this.orientation === "inherit") {
-      console.log('RNSBottomTabsScreen setScreenOrientation: orientation is inherit/undefined, using default (UNSPECIFIED)')
       this.restoreDefaultOrientation()
       return
     }
@@ -266,8 +258,7 @@ export struct RNSBottomTabsScreen {
   }
 
   private applyOrientation(orientationTmp: number) {
-    if (this.lastAppliedOrientation === orientationTmp) {
-      console.log('RNSBottomTabsScreen applyOrientation: orientation not changed, skipping. value=' + orientationTmp)
+    if (RNSBottomTabsScreen.lastAppliedOrientationForWindow === orientationTmp) {
       return
     }
 
@@ -277,14 +268,13 @@ export struct RNSBottomTabsScreen {
         console.error('RNSBottomTabsScreen applyOrientation: uiAbilityContext is null')
         return
       }
-
       window.getLastWindow(context).then((lastWindow) => {
         if (!lastWindow) {
           console.error('RNSBottomTabsScreen applyOrientation: getLastWindow returned null')
           return
         }
         lastWindow.setPreferredOrientation(orientationTmp)
-        this.lastAppliedOrientation = orientationTmp
+        RNSBottomTabsScreen.lastAppliedOrientationForWindow = orientationTmp
       }).catch((error: Error) => {
         console.error('RNSBottomTabsScreen applyOrientation getLastWindow error: ' + error)
       })
@@ -296,6 +286,7 @@ export struct RNSBottomTabsScreen {
   build() {
     RNViewBase({ ctx: this.ctx, tag: this.tag }) {
       Stack() {
+        ContentSlot(this.ctx.getContentForTag(this.tag))
       }
       .width('100%')
       .height('100%')

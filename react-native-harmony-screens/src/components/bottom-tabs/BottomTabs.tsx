@@ -147,11 +147,15 @@ function BottomTabs(props: BottomTabsProps) {
       }),
     );
 
+    const focusedTab = tabs.find(t => t.props.tabKey === focusedTabKey);
+    const contentOrientation = focusedTab?.props?.orientation ?? 'inherit';
+
     const contentSlotTab = (
       <BottomTabsScreen
         key={CONTENT_SLOT_TAB_KEY}
         tabKey={CONTENT_SLOT_TAB_KEY}
         isFocused={true}
+        orientation={contentOrientation}
       >
         {focusedTabKey ? contentMap[focusedTabKey] : null}
       </BottomTabsScreen>
