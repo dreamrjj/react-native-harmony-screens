@@ -188,7 +188,9 @@ RNSScreenStackHeaderConfigProps::RNSScreenStackHeaderConfigProps(
     hideBackButton(convertRawProp(context, rawProps, "hideBackButton", sourceProps.hideBackButton, {false})),
     backButtonInCustomView(convertRawProp(context, rawProps, "backButtonInCustomView", sourceProps.backButtonInCustomView, {false})),
     blurEffect(convertRawProp(context, rawProps, "blurEffect", sourceProps.blurEffect, {RNSScreenStackHeaderConfigBlurEffect::None})),
-    topInsetEnabled(convertRawProp(context, rawProps, "topInsetEnabled", sourceProps.topInsetEnabled, {false}))
+    topInsetEnabled(convertRawProp(context, rawProps, "topInsetEnabled", sourceProps.topInsetEnabled, {false})),
+    headerLeftBarButtonItems(convertRawProp(context, rawProps, "headerLeftBarButtonItems", sourceProps.headerLeftBarButtonItems, {})),
+    headerRightBarButtonItems(convertRawProp(context, rawProps, "headerRightBarButtonItems", sourceProps.headerRightBarButtonItems, {}))
       {}
 RNSScreenStackHeaderSubviewProps::RNSScreenStackHeaderSubviewProps(
     const PropsParserContext &context,

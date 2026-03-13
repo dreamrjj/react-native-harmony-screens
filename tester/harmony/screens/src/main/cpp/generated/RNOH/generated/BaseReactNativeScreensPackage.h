@@ -132,6 +132,8 @@ class BaseReactNativeScreensPackageEventEmitRequestHandler : public EventEmitReq
             "onDidDisappear",
 			"onStatusBarHeightChange",
             "onNavigationBarHeightChange",
+            "onPressHeaderBarButtonItem",
+            "onPressHeaderBarButtonMenuItem",
         };
 
         if (std::find(supportedComponentNames.begin(), supportedComponentNames.end(), componentName) != supportedComponentNames.end() &&

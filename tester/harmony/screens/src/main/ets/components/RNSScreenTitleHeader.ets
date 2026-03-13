@@ -22,16 +22,69 @@
  * SOFTWARE.
  */
 
+import { RNC } from '../generated/ts';
 import { RNComponentContext, } from '@rnoh/react-native-openharmony';
 import { RNSScreenStackHeaderConfigDescriptor } from './RNSScreenStackHeaderConfig';
 import { RNSScreenStackHeaderSubview, RNSScreenStackHeaderSubviewDescriptor } from './RNSScreenStackHeaderSubview';
-import { TITLEBAR_HEIGHT, NATIVE_BUTTON_VERTICAL_EDGE_MARGIN, NATIVE_BUTTON_OFFSET } from '../Constants';
-import { RNSSearchBarDescriptor } from './RNSSearchBar'
+
+interface GeneratedTypeLiteralInterface_1 {
+  type: string;
+  name: string;
+}
+
+interface GeneratedTypeLiteralInterface_2 {
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: string;
+  color?: string;
+}
+
+interface GeneratedTypeLiteralInterface_4 {
+  color: string;
+  backgroundColor: string;
+}
+
+interface GeneratedTypeLiteralInterface_3 {
+  value: string;
+  style?: GeneratedTypeLiteralInterface_4;
+}
+
+interface GeneratedTypeLiteralInterface_6 {
+  label: string;
+  type: string;
+  onPress: () => void;
+  menuId?: string;
+}
+
+interface GeneratedTypeLiteralInterface_5 {
+  items: GeneratedTypeLiteralInterface_6[];
+}
+
+interface BarButtonItem {
+  label?: string;
+  icon?: GeneratedTypeLiteralInterface_1;
+  labelStyle?: GeneratedTypeLiteralInterface_2;
+  tintColor?: string;
+  badge?: GeneratedTypeLiteralInterface_3;
+  disabled?: boolean;
+  variant?: string;
+  menu?: GeneratedTypeLiteralInterface_5;
+  spacing?: number;
+  sharesBackground?: boolean;
+  selected?: boolean;
+  changesSelectionAsPrimaryAction?: boolean;
+  hidesSharedBackground?: boolean;
+  buttonId?: string;
+  onPress?: () => void;
+};
 
 @Component
 export struct RNSScreenTitleHeader {
+  public static readonly NAME = RNC.RNSScreenStackHeaderConfig.NAME
   public ctx!: RNComponentContext
-  @State isFirstScreenInStack: boolean  = true;
+  public tag: number = 0
+  private eventEmitter: RNC.RNSScreenStackHeaderConfig.EventEmitter | undefined = undefined
+  @State isFirstScreenInStack: boolean = true;
   public screenStackHeaderConfigTag!: number
   @State descriptor: RNSScreenStackHeaderConfigDescriptor | undefined = undefined
   @State nativeTitleText: string = "";
@@ -49,9 +102,12 @@ export struct RNSScreenTitleHeader {
   @State hideBackButton: boolean | undefined = undefined;
   @State backButtonInCustomView: boolean | undefined = undefined;
   @State titleBarTranslucent: boolean = false;
-  @State blurEffect: 'none' | 'extraLight' | 'light' | 'dark' | 'regular' | 'prominent' | 'systemUltraThinMaterial' | 'systemThinMaterial' | 'systemMaterial' | 'systemThickMaterial' | 'systemChromeMaterial' | 'systemUltraThinMaterialLight' | 'systemThinMaterialLight' | 'systemMaterialLight' | 'systemThickMaterialLight' | 'systemChromeMaterialLight' | 'systemUltraThinMaterialDark' | 'systemThinMaterialDark' | 'systemMaterialDark' | 'systemThickMaterialDark' | 'systemChromeMaterialDark' = 'none';
+  @State blurEffect: 'none' | 'extraLight' | 'light' | 'dark' | 'regular' | 'prominent' | 'systemUltraThinMaterial' | 'systemThinMaterial' | 'systemMaterial' | 'systemThickMaterial' | 'systemChromeMaterial' | 'systemUltraThinMaterialLight' | 'systemThinMaterialLight' | 'systemMaterialLight' | 'systemThickMaterialLight' | 'systemChromeMaterialLight' | 'systemUltraThinMaterialDark' | 'systemThinMaterialDark' | 'systemMaterialDark' | 'systemThickMaterialDark' | 'systemChromeMaterialDark' =
+    'none';
   @State blueStyle: BlurStyle = BlurStyle.NONE;
   @State hintColor: string | undefined = undefined;
+  @State headerLeftBarButtonItemsValue: object[] | undefined = []
+  @State headerRightBarButtonItemsValue: object[] | undefined = []
   @State isTranslate: boolean = false; // 背景色是否有alpha透明度
   @State hideNavigationBar: boolean = true;
   @State isSearchActive: boolean = false;
@@ -61,11 +117,13 @@ export struct RNSScreenTitleHeader {
   }
 
   aboutToAppear(): void {
-    if(!!!this.screenStackHeaderConfigTag) {
+    if (!!!this.screenStackHeaderConfigTag) {
       return;
     }
+    this.eventEmitter = new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.tag)
     this.descriptor =
       this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderConfigDescriptor>(this.screenStackHeaderConfigTag)
+    console.info(`RNSScreenTitleHeader onDescriptorChange descriptor:${JSON.stringify(this.descriptor)}`)
     this.cleanUpCallbacks.push(this.ctx.descriptorRegistry.subscribeToDescriptorChanges(this.screenStackHeaderConfigTag,
       (newDescriptor) => {
         this.descriptor = (newDescriptor as RNSScreenStackHeaderConfigDescriptor)
@@ -78,9 +136,9 @@ export struct RNSScreenTitleHeader {
     this.cleanUpCallbacks.forEach(cb => cb())
   }
 
-  blurEffectConvert(){
-    if(this.blurEffect){
-      switch(this.blurEffect) {
+  blurEffectConvert() {
+    if (this.blurEffect) {
+      switch (this.blurEffect) {
         case 'none':
           this.blueStyle = BlurStyle.NONE;
           break;
@@ -112,7 +170,7 @@ export struct RNSScreenTitleHeader {
         case 'systemChromeMaterial':
         case 'systemChromeMaterialLight':
         case 'systemChromeMaterialDark':
-          this.ctx.logger.error('RNSScreenStackHeaderConfig', this.blurEffect+" not support")
+          this.ctx.logger.error('RNSScreenStackHeaderConfig', this.blurEffect + " not support")
           break;
       }
     }
@@ -124,14 +182,14 @@ export struct RNSScreenTitleHeader {
     }
     this.hideShadow = this.descriptor.rawProps["hideShadow"];
     const shouldDisplayNativeTitle = this.descriptor.childrenTags.length > 0 ?
-    this.descriptor.childrenTags.every((e) => {
-      const tmpDesc = this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderSubviewDescriptor>(e)
-      if (tmpDesc.rawProps["type"] === "title" || tmpDesc.rawProps["type"] === "center" ||
-        tmpDesc.rawProps["type"] === "left") {
-        return false;
-      }
-      return true;
-    }) : true;
+      this.descriptor.childrenTags.every((e) => {
+        const tmpDesc = this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderSubviewDescriptor>(e)
+        if (tmpDesc.rawProps["type"] === "title" || tmpDesc.rawProps["type"] === "center" ||
+          tmpDesc.rawProps["type"] === "left") {
+          return false;
+        }
+        return true;
+      }) : true;
 
     const newNativeTitleText: string = shouldDisplayNativeTitle ? this.descriptor.rawProps["title"] : " ";
     if (this.nativeTitleText !== newNativeTitleText) {
@@ -182,15 +240,26 @@ export struct RNSScreenTitleHeader {
       this.blurEffect = this.descriptor.rawProps["blurEffect"];
     }
 
-    let tmpColor: string | undefined  = this.descriptor.rawProps["color"];
+    let tmpColor: string | undefined = this.descriptor.rawProps["color"];
     if (this.hintColor !== tmpColor) {
       this.hintColor = tmpColor;
     }
-    let tmpTitleColor: string | undefined  = this.descriptor.rawProps["titleColor"];
+
+    let tmpTitleColor: string | undefined = this.descriptor.rawProps["titleColor"];
     if (this.titleColorValue !== tmpTitleColor) {
       this.titleColorValue = tmpTitleColor;
     }
 
+    let headerLeftBarButtonItems: object[] | undefined = this.descriptor.rawProps["headerLeftBarButtonItems"];
+    if (this.headerLeftBarButtonItemsValue !== headerLeftBarButtonItems) {
+      this.headerLeftBarButtonItemsValue = headerLeftBarButtonItems;
+    }
+    console.info(`RNSScreenTitleHeader headerLeftBarButtonItemsValue:${JSON.stringify(this.headerLeftBarButtonItemsValue)}`)
+    let headerRightBarButtonItems: object[] | undefined = this.descriptor.rawProps["headerRightBarButtonItems"];
+    if (this.headerRightBarButtonItemsValue !== headerRightBarButtonItems) {
+      this.headerRightBarButtonItemsValue = headerRightBarButtonItems;
+    }
+    console.info(`RNSScreenTitleHeader headerRightBarButtonItemsValue:${JSON.stringify(this.headerRightBarButtonItemsValue)}`)
     this.isTranslate = hasTransparency(this.backgroundColorValue);
     this.blurEffectConvert();
 
@@ -207,80 +276,213 @@ export struct RNSScreenTitleHeader {
       }
     }
   }
+  
+  // 转换字体权重
+  getFontWeight(weight?: string): number {
+    switch (weight) {
+      case 'bold':
+        return FontWeight.Bold;
+      case 'medium':
+        return FontWeight.Medium;
+      case 'light':
+        return FontWeight.Lighter;
+      default:
+        return FontWeight.Normal;
+    }
+  }
+
+  @Builder
+  renderButton(item: BarButtonItem) {
+    Button(item.label || '')
+      .height(20)
+      .fontSize(item.labelStyle?.fontSize || 14)
+      .fontWeight(this.getFontWeight(item.labelStyle?.fontWeight))
+      .fontColor(item.labelStyle?.color ? item.labelStyle.color : item.tintColor || Color.Black)
+      .fontFamily(item.labelStyle?.fontFamily || 'sans-serif')
+      .focusable(!item.disabled)
+      .onClick(() => {
+        if (!item.disabled) {
+          console.info(`RNSScreenTitleHeader buttonId:${item.buttonId}`)
+          this.eventEmitter?.emit('onPressHeaderBarButtonItem', {
+            buttonId: item.buttonId
+          })
+        }
+      });
+  }
 
   build() {
     RelativeContainer() {
-      if(this.screenStackHeaderConfigTag){
+      if (this.screenStackHeaderConfigTag) {
         Stack() {
-          Row() {
-            if (!this.isFirstScreenInStack && !this.hideBackButton && (!this.isSearchActive || !this.hideNavigationBar)) {
+          if ((this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0 ||
+            this.headerRightBarButtonItemsValue && this.headerRightBarButtonItemsValue?.length > 0)) {
             Row() {
-              SymbolGlyph($r('sys.symbol.arrow_left')).fontSize(26).fontColor([this.hintColor])
-
-              if (this.backTitleVisible) {
-                Text(this.backTitle ? this.backTitle : '')
-                  .fontFamily(this.backTitleFontFamily)
-                  .fontSize(this.backTitleFontSize ? this.backTitleFontSize : 18)
-                  .fontColor(this.hintColor)
-                  .margin({ left: this.hideBackButton ? 0 : 5, right: (this.backTitleVisible && this.backTitle) ? 5 : 0 })
-              }
-            }.height(56)
-            .onClick(() => {
-              if (this.backBtnPressed) {
-                this.backBtnPressed();
-              }
-            })
-          }
-          if (!this.isSearchActive || !this.hideNavigationBar) {
-            Text(this.nativeTitleText)
-              .height("100%")
-              .fontFamily(this.fontFamilyValue)
-              .fontSize(this.titleFontSizeValue ? this.titleFontSizeValue : 18)
-              .fontWeight(this.titleFontWeightValue ? this.titleFontWeightValue : FontWeight.Medium)
-              .fontColor(this.titleColorValue?this.titleColorValue:this.hintColor)
-              .textAlign(TextAlign.Start)
-          }
-        }
-        .width("100%")
-        .height("100%")
-        .layoutWeight(1)
-        .hitTestBehavior(HitTestMode.Transparent)
-
-        Stack() {
-          if (this.descriptor) {
-            ForEach(this.descriptor.childrenTags, (childTag: number) => {
-              RNSScreenStackHeaderSubview({
-                ctx: this.ctx,
-                tag: childTag,
-                isFirstScreenInStack: this.isFirstScreenInStack,
-                onSearchFocusChange: (focused: boolean) => {
-                  this.isSearchActive = focused
+              Row({
+                space: 10,
+              }) {
+                if (this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0) {
+                  ForEach(this.headerLeftBarButtonItemsValue, (item: BarButtonItem, index: number) => {
+                    if (item.spacing) {
+                      // 处理间距项
+                      Blank().width(item.spacing);
+                    } else if (item.menu) {
+                      // 处理带菜单的按钮
+                      Menu() {
+                        ForEach(item.menu.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
+                          MenuItem({ content: menuItem.label })
+                            .onClick(() => {
+                              console.info(`RNSScreenTitleHeader menuId:${menuItem.menuId}`)
+                              this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
+                                menuId: menuItem.menuId
+                              })
+                            });
+                        });
+                      }
+                    } else if (item.badge) {
+                      // 处理带徽章的按钮
+                      Badge({
+                        count: parseInt(item.badge.value),
+                        style: {
+                          color: item.badge.style?.color || Color.White,
+                          badgeColor: item.badge.style?.backgroundColor || Color.Red
+                        }
+                      }) {
+                        this.renderButton(item);
+                      }
+                    } else {
+                      // 处理普通按钮
+                      this.renderButton(item);
+                    }
+                  });
                 }
-              })
-            })
+
+                Text(this.nativeTitleText)
+                  .height("100%")
+                  .fontSize(16)
+
+                if (this.headerRightBarButtonItemsValue && this.headerRightBarButtonItemsValue?.length > 0) {
+                  ForEach(this.headerRightBarButtonItemsValue, (item: BarButtonItem, index: number) => {
+                    if (item.spacing) {
+                      // 处理间距项
+                      Blank().width(item.spacing);
+                    } else if (item.menu) {
+                      // 处理带菜单的按钮
+                      Menu() {
+                        ForEach(item.menu.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
+                          MenuItem({ content: menuItem.label })
+                            .onClick(() => {
+                              if (item.onPress && !item.disabled) {
+                                console.info(`RNSScreenTitleHeader menuId:${menuItem.menuId}`)
+                                this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
+                                  menuId: menuItem.menuId
+                                })
+                              }
+                            });
+                        });
+                      }
+                      .bindMenu();
+                    } else if (item.badge) {
+                      // 处理带徽章的按钮
+                      Badge({
+                        count: parseInt(item.badge.value),
+                        style: {
+                          color: item.badge.style?.color || Color.White,
+                          badgeColor: item.badge.style?.backgroundColor || Color.Red
+                        }
+                      }) {
+                        this.renderButton(item);
+                      }
+                    } else {
+                      // 处理普通按钮
+                      this.renderButton(item);
+                    }
+                  });
+                }
+              }
+              .width('100%')
+              .padding(10)
+              .justifyContent(FlexAlign.Center)
+            }
+            .width("100%")
+            .height("100%")
+            .layoutWeight(1)
+            .padding({ top: 25, left: 10, right: 10 })
+            .hitTestBehavior(HitTestMode.Transparent)
+          } else {
+            Row() {
+              if (!this.isFirstScreenInStack && !this.hideBackButton &&
+                (!this.isSearchActive || !this.hideNavigationBar)) {
+                Row() {
+                  SymbolGlyph($r('sys.symbol.arrow_left')).fontSize(26).fontColor([this.hintColor])
+
+                  if (this.backTitleVisible) {
+                    Text(this.backTitle ? this.backTitle : '')
+                      .fontFamily(this.backTitleFontFamily)
+                      .fontSize(this.backTitleFontSize ? this.backTitleFontSize : 18)
+                      .fontColor(this.hintColor)
+                      .margin({
+                        left: this.hideBackButton ? 0 : 5,
+                        right: (this.backTitleVisible && this.backTitle) ? 5 : 0
+                      })
+                  }
+                }.height(56)
+                .onClick(() => {
+                  if (this.backBtnPressed) {
+                    this.backBtnPressed();
+                  }
+                })
+              }
+              if (!this.isSearchActive || !this.hideNavigationBar) {
+                Text(this.nativeTitleText)
+                  .height("100%")
+                  .fontFamily(this.fontFamilyValue)
+                  .fontSize(this.titleFontSizeValue ? this.titleFontSizeValue : 18)
+                  .fontWeight(this.titleFontWeightValue ? this.titleFontWeightValue : FontWeight.Medium)
+                  .fontColor(this.titleColorValue ? this.titleColorValue : this.hintColor)
+                  .textAlign(TextAlign.Start)
+              }
+            }
+            .width("100%")
+            .height("100%")
+            .layoutWeight(1)
+            .hitTestBehavior(HitTestMode.Transparent)
+
+            Stack() {
+              if (this.descriptor) {
+                ForEach(this.descriptor.childrenTags, (childTag: number) => {
+                  RNSScreenStackHeaderSubview({
+                    ctx: this.ctx,
+                    tag: childTag,
+                    isFirstScreenInStack: this.isFirstScreenInStack,
+                    onSearchFocusChange: (focused: boolean) => {
+                      this.isSearchActive = focused
+                    }
+                  })
+                })
+              }
+            }
+            .width("100%")
+            .height("100%")
+            .layoutWeight(1)
+            .hitTestBehavior(HitTestMode.Transparent)
           }
         }
         .width("100%")
-        .height("100%")
+        .height(56)
         .layoutWeight(1)
-        .hitTestBehavior(HitTestMode.Transparent)
+        .padding({ left: 10, right: 10 })
+        .backgroundColor(this.titleBarTranslucent ? Color.Transparent : this.backgroundColorValue)
+        .backgroundBlurStyle(this.isTranslate ? this.blueStyle : BlurStyle.NONE)
 
-      }.width("100%")
-      .height(56)
-      .layoutWeight(1)
-      .padding({ left: 10, right: 10 })
-      .backgroundColor(this.titleBarTranslucent?Color.Transparent:this.backgroundColorValue)
-      .backgroundBlurStyle(this.isTranslate?this.blueStyle:BlurStyle.NONE)
-
-      Text('')
-        .width("100%")
-        .height("1")
-        .backgroundColor('#d3d3d3')
-        .visibility(this.hideShadow ? Visibility.None : Visibility.Visible)
-        .alignRules({
-          start: { anchor: "__container__", align: HorizontalAlign.Start },
-          top: { anchor: "__container__", align: VerticalAlign.Bottom }
-        })
+        Text('')
+          .width("100%")
+          .height("1")
+          .backgroundColor('#d3d3d3')
+          .visibility(this.hideShadow ? Visibility.None : Visibility.Visible)
+          .alignRules({
+            start: { anchor: "__container__", align: HorizontalAlign.Start },
+            top: { anchor: "__container__", align: VerticalAlign.Bottom }
+          })
       }
     }
     .onAppear(()=> {
