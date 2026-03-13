@@ -276,7 +276,22 @@ void RNSScreenStackHeaderConfigEventEmitter::onDetached(OnDetached $event) const
   });
 }
 
+void RNSScreenStackHeaderConfigEventEmitter::onPressHeaderBarButtonItem(OnPressHeaderBarButtonItem event) const {
+  dispatchEvent("pressHeaderBarButtonItem", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "buttonId", event.buttonId);
+    return payload;
+  });
+}
 
+
+void RNSScreenStackHeaderConfigEventEmitter::onPressHeaderBarButtonMenuItem(OnPressHeaderBarButtonMenuItem event) const {
+  dispatchEvent("pressHeaderBarButtonMenuItem", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "menuId", event.menuId);
+    return payload;
+  });
+}
 
 void RNSScreenStackEventEmitter::onFinishTransitioning(OnFinishTransitioning $event) const {
   dispatchEvent("finishTransitioning", [](jsi::Runtime &runtime) {
@@ -285,7 +300,6 @@ void RNSScreenStackEventEmitter::onFinishTransitioning(OnFinishTransitioning $ev
     return $payload;
   });
 }
-
 
 void RNSSearchBarEventEmitter::onSearchFocus(OnSearchFocus $event) const {
   dispatchEvent("searchFocus", [](jsi::Runtime &runtime) {

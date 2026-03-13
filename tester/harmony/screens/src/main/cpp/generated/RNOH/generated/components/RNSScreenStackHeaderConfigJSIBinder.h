@@ -62,6 +62,8 @@ class RNSScreenStackHeaderConfigJSIBinder : public ViewComponentJSIBinder {
         object.setProperty(rt, "backButtonInCustomView", true);
         object.setProperty(rt, "blurEffect", true);
         object.setProperty(rt, "topInsetEnabled", true);
+        object.setProperty(rt, "headerLeftBarButtonItems", true);
+        object.setProperty(rt, "headerRightBarButtonItems", true);
         return object;
     }
 
@@ -79,6 +81,8 @@ class RNSScreenStackHeaderConfigJSIBinder : public ViewComponentJSIBinder {
         facebook::jsi::Object events(rt);
         events.setProperty(rt, "topAttached", createDirectEvent(rt, "onAttached"));
         events.setProperty(rt, "topDetached", createDirectEvent(rt, "onDetached"));
+        events.setProperty(rt, "topPressHeaderBarButtonItem", createDirectEvent(rt, "onPressHeaderBarButtonItem"));
+        events.setProperty(rt, "topPressHeaderBarButtonMenuItem", createDirectEvent(rt, "onPressHeaderBarButtonMenuItem"));
         return events;
     }
 };
