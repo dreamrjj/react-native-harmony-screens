@@ -50,10 +50,10 @@ export struct RNSSearchBar {
   @State headerIconColor: string | undefined = undefined
   @State shouldShowHintSearchIcon: boolean = true;
   @State tintColor: string = '';
-  @State autoFocus: boolean = true;
+  @State autoFocus: boolean = false;
   @State autoCapitalize: string = 'none';
+  onSearchFocusChange?: (focused: boolean) => void = undefined;
   private cleanupCommandCallback?: () => void = undefined;
-  private searchController: SearchController = new SearchController();
 
   aboutToAppear() {
     this.eventEmitter = new RNC.RNSSearchBar.EventEmitter(this.ctx.rnInstance, this.tag)
@@ -72,17 +72,17 @@ export struct RNSSearchBar {
         if (command === 'open') {
           if (!this.showTextInput) {
             this.showTextInput = true;
+            this.onSearchFocusChange?.(true)
           }
         } else if (command === 'close') {
           if (this.showTextInput) {
             this.getUIContext().getFocusController().clearFocus();
             this.showTextInput = false;
+            this.onSearchFocusChange?.(false)
           }
         } else if (command === 'focus') {
           this.showTextInput = true;
-          setTimeout(()=>{
-            this.getUIContext().getFocusController().requestFocus("search");
-          }, 50)
+          this.safeRequestSearchFocus(50);
         } else if (command === 'blur') {
           this.getUIContext().getFocusController().clearFocus();
         } else if (command === 'setText') {
@@ -168,7 +168,23 @@ export struct RNSSearchBar {
   cancelSearch() {
     this.eventEmitter!.emit("cancelButtonPress", {})
     this.showTextInput = false;
+    this.onSearchFocusChange?.(false)
     this.eventEmitter!.emit("close", {})
+  }
+
+  private safeRequestSearchFocus(initialDelay: number) {
+    const tryFocus = (delay: number) => {
+      setTimeout(() => {
+        try {
+          this.getUIContext().getFocusController().requestFocus("search");
+        } catch (e) {
+          if (delay < 300) {
+            tryFocus(300);
+          }
+        }
+      }, delay);
+    };
+    tryFocus(initialDelay);
   }
 
   build() {
@@ -176,7 +192,7 @@ export struct RNSSearchBar {
       Row() {
         if (this.showTextInput) {
           Row() {
-            Search({ placeholder: this.placeholder, value: this.text, controller: this.searchController })
+            Search({ placeholder: this.placeholder, value: this.text })
               .layoutWeight(1)
               .fontColor(this.fontColor)
               .caretStyle({color: this.tintColor})
@@ -186,16 +202,18 @@ export struct RNSSearchBar {
               .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
               .type(this.type)
               .focusable(true)
-              .autoCapitalizationMode(this.getAutoCapitalizationMode())
+              // .autoCapitalizationMode(AutoCapitalizationMode.WORDS) // API 20生效
               .onChange((value: string) => {
                 this.text = value
                 this.eventEmitter!.emit("changeText", { text: value })
               })
               .onFocus(() => {
                 this.eventEmitter!.emit("searchFocus", {})
+                this.onSearchFocusChange?.(true)
               })
               .onBlur(() => {
                 this.eventEmitter!.emit("searchBlur", {})
+                this.onSearchFocusChange?.(false)
               })
               .onSubmit(() => {
                 this.eventEmitter?.emit("searchButtonPress", {
@@ -205,9 +223,7 @@ export struct RNSSearchBar {
               .id("search")
               .onAppear(() => {
                 if (this.autoFocus) {
-                  setTimeout(() => {
-                    this.getUIContext().getFocusController().requestFocus("search");
-                  }, 50);
+                  this.safeRequestSearchFocus(50);
                 }
               })
             Text(this.cancelButtonText)
@@ -228,8 +244,6 @@ export struct RNSSearchBar {
             this.showTextInput = true;
             this.eventEmitter!.emit("open", {})
           })
-
-          // TextInput().autoCapitalizationMode(this.getAutoCapitalizationMode()).margin({left: 60})
         }
       }.justifyContent(FlexAlign.End)
     }

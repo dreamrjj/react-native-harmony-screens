@@ -26,6 +26,7 @@ import { RNComponentContext, } from '@rnoh/react-native-openharmony';
 import { RNSScreenStackHeaderConfigDescriptor } from './RNSScreenStackHeaderConfig';
 import { RNSScreenStackHeaderSubview, RNSScreenStackHeaderSubviewDescriptor } from './RNSScreenStackHeaderSubview';
 import { TITLEBAR_HEIGHT, NATIVE_BUTTON_VERTICAL_EDGE_MARGIN, NATIVE_BUTTON_OFFSET } from '../Constants';
+import { RNSSearchBarDescriptor } from './RNSSearchBar'
 
 @Component
 export struct RNSScreenTitleHeader {
@@ -52,6 +53,8 @@ export struct RNSScreenTitleHeader {
   @State blueStyle: BlurStyle = BlurStyle.NONE;
   @State hintColor: string | undefined = undefined;
   @State isTranslate: boolean = false; // 背景色是否有alpha透明度
+  @State hideNavigationBar: boolean = true;
+  @State isSearchActive: boolean = false;
 
   private cleanUpCallbacks: (() => void)[] = []
   public backBtnPressed: () => void = () => {
@@ -183,7 +186,6 @@ export struct RNSScreenTitleHeader {
     if (this.hintColor !== tmpColor) {
       this.hintColor = tmpColor;
     }
-
     let tmpTitleColor: string | undefined  = this.descriptor.rawProps["titleColor"];
     if (this.titleColorValue !== tmpTitleColor) {
       this.titleColorValue = tmpTitleColor;
@@ -191,14 +193,27 @@ export struct RNSScreenTitleHeader {
 
     this.isTranslate = hasTransparency(this.backgroundColorValue);
     this.blurEffectConvert();
+
+    // Resolve hideNavigationBar from child RNSSearchBar descriptor
+    for (let i = 0; i < this.descriptor.childrenTags.length; i++) {
+      const subviewTag = this.descriptor.childrenTags[i];
+      const subviewDesc = this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderSubviewDescriptor>(subviewTag);
+      if (subviewDesc?.rawProps["type"] === "searchBar" && subviewDesc.childrenTags.length > 0) {
+        const searchBarTag = subviewDesc.childrenTags[0];
+        const searchBarDesc = this.ctx.descriptorRegistry.getDescriptor<RNSSearchBarDescriptor>(searchBarTag);
+        const rawHideNav = searchBarDesc?.rawProps?.["hideNavigationBar"] as string | boolean;
+        this.hideNavigationBar = (rawHideNav === false || rawHideNav === "false") ? false : true;
+        break;
+      }
+    }
   }
 
   build() {
     RelativeContainer() {
       if(this.screenStackHeaderConfigTag){
-      Stack() {
-        Row() {
-            if (!this.isFirstScreenInStack && !this.hideBackButton) {
+        Stack() {
+          Row() {
+            if (!this.isFirstScreenInStack && !this.hideBackButton && (!this.isSearchActive || !this.hideNavigationBar)) {
             Row() {
               SymbolGlyph($r('sys.symbol.arrow_left')).fontSize(26).fontColor([this.hintColor])
 
@@ -216,13 +231,15 @@ export struct RNSScreenTitleHeader {
               }
             })
           }
-          Text(this.nativeTitleText)
-            .height("100%")
-            .fontFamily(this.fontFamilyValue)
-            .fontSize(this.titleFontSizeValue ? this.titleFontSizeValue : 18)
-            .fontWeight(this.titleFontWeightValue ? this.titleFontWeightValue : FontWeight.Medium)
-            .fontColor(this.titleColorValue?this.titleColorValue:this.hintColor)
-            .textAlign(TextAlign.Start)
+          if (!this.isSearchActive || !this.hideNavigationBar) {
+            Text(this.nativeTitleText)
+              .height("100%")
+              .fontFamily(this.fontFamilyValue)
+              .fontSize(this.titleFontSizeValue ? this.titleFontSizeValue : 18)
+              .fontWeight(this.titleFontWeightValue ? this.titleFontWeightValue : FontWeight.Medium)
+              .fontColor(this.titleColorValue?this.titleColorValue:this.hintColor)
+              .textAlign(TextAlign.Start)
+          }
         }
         .width("100%")
         .height("100%")
@@ -235,7 +252,10 @@ export struct RNSScreenTitleHeader {
               RNSScreenStackHeaderSubview({
                 ctx: this.ctx,
                 tag: childTag,
-                isFirstScreenInStack: this.isFirstScreenInStack
+                isFirstScreenInStack: this.isFirstScreenInStack,
+                onSearchFocusChange: (focused: boolean) => {
+                  this.isSearchActive = focused
+                }
               })
             })
           }
@@ -263,10 +283,19 @@ export struct RNSScreenTitleHeader {
         })
       }
     }
+    .onAppear(()=> {
+      this.onPageShow();
+    })
     .width("100%")
     .height(56)
     .layoutWeight(1)
     .hitTestBehavior(HitTestMode.Transparent)
+  }
+
+  onPageShow(): void {
+    if (!this.descriptor) {
+      return;
+    }
   }
 }
 
