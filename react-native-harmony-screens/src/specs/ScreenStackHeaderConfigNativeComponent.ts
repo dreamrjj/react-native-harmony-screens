@@ -6,6 +6,7 @@ import type {
   Int32,
   WithDefault,
   DirectEventHandler,
+  UnsafeMixed,
 } from "react-native/Libraries/Types/CodegenTypes";
 
 // RNOH Patch
@@ -79,8 +80,8 @@ export interface NativeProps extends ViewProps {
   blurEffect?: WithDefault<BlurEffect, 'none'>;
   // TODO: implement this props on iOS
   topInsetEnabled?: boolean;
-  headerLeftBarButtonItems?: Object; // any[];
-  headerRightBarButtonItems?: Object; // any[];
+  headerLeftBarButtonItems?: UnsafeMixed[]; // any[];
+  headerRightBarButtonItems?: UnsafeMixed[]; // any[];
   onPressHeaderBarButtonItem?: DirectEventHandler<OnPressHeaderBarButtonItemEvent>;
   onPressHeaderBarButtonMenuItem?: DirectEventHandler<OnPressHeaderBarButtonMenuItemEvent>;
 }
