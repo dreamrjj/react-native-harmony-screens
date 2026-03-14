@@ -296,7 +296,8 @@ export struct RNSScreenStack {
           RNSScreenStack.RECORD_PRESENTATION = this.presentation;
           if (this.presentation === 'transparentModal' || this.presentation === 'containedModal' ||
             this.presentation === 'containedTransparentModal' || this.presentation === 'fullScreenModal' ||
-            this.presentation === 'formSheet') {
+            this.presentation === 'formSheet 
+            || this.presentation === 'bottomSheet') {
             currentAnimation = toParam.showAnimation;
             animationType = toParam.getAnimationType();
           } else {

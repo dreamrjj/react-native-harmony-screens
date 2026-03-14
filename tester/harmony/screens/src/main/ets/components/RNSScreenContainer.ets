@@ -227,7 +227,11 @@ export struct RNSScreenContainer {
           currentAnimation = toParam.detachAnimation;
           animationType = fromParam.getAnimationType();
         } else if (operation == NavigationOperation.POP && this.replaceAnimation === 'push') {
-          if ((RNSScreenContainer.RECORD_PRESENTATION === 'transparentModal' || RNSScreenContainer.RECORD_PRESENTATION === 'containedTransparentModal' || RNSScreenContainer.RECORD_PRESENTATION === 'formSheet') && RNSScreenContainer.RECORD_PRESENTATION !== this.presentation) {
+          if ((RNSScreenContainer.RECORD_PRESENTATION === 'transparentModal' 
+          || RNSScreenContainer.RECORD_PRESENTATION === 'containedTransparentModal' 
+          || RNSScreenContainer.RECORD_PRESENTATION === 'formSheet'
+          || RNSScreenContainer.RECORD_PRESENTATION === 'pageSheet') 
+          && RNSScreenContainer.RECORD_PRESENTATION !== this.presentation) {
             RNSScreenContainer.RECORD_PRESENTATION = this.presentation
             currentAnimation = toParam.showAnimation;
             animationType = fromParam.getAnimationType();
@@ -248,7 +252,10 @@ export struct RNSScreenContainer {
           }
         } else if (operation == NavigationOperation.PUSH && this.replaceAnimation === 'push') {
           RNSScreenContainer.RECORD_PRESENTATION = this.presentation;
-          if (this.presentation === 'transparentModal' || this.presentation === 'containedTransparentModal' || this.presentation === 'formSheet') {
+          if (this.presentation === 'transparentModal' 
+          || this.presentation === 'containedTransparentModal' 
+          || this.presentation === 'formSheet'
+          || this.presentation === 'pageSheet') {
             currentAnimation = fromParam.hideAnimation;
             animationType = toParam.getAnimationType();
           } else {

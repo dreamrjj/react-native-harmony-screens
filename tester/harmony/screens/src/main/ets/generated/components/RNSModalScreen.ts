@@ -64,7 +64,7 @@ export namespace RNSModalScreen {
     statusBarStyle?: string;
     statusBarTranslucent?: boolean;
     gestureResponseDistance?: {start: number, end: number, top: number, bottom: number};
-    stackPresentation?: 'push' | 'modal' | 'transparentModal' | 'fullScreenModal' | 'formSheet' | 'containedModal' | 'containedTransparentModal';
+    stackPresentation?: 'push' | 'modal' | 'transparentModal' | 'fullScreenModal' | 'formSheet' | 'pageSheet' | 'containedModal' | 'containedTransparentModal';
     stackAnimation?: 'default' | 'flip' | 'simple_push' | 'none' | 'fade' | 'slide_from_right' | 'slide_from_left' | 'slide_from_bottom' | 'fade_from_bottom' | 'ios_from_right' | 'ios_from_left';
     transitionDuration?: number;
     replaceAnimation?: 'pop' | 'push';

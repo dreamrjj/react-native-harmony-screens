@@ -46,7 +46,8 @@ type StackPresentation =
   | "fullScreenModal"
   | "formSheet"
   | "containedModal"
-  | "containedTransparentModal";
+  | "containedTransparentModal"
+  | "pageSheet";
 
 type StackAnimation =
   | "default"

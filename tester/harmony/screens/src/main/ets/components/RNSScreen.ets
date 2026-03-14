@@ -226,7 +226,7 @@ export struct RNSScreen {
     this.onScreenPropsChange(presentation)
 
     if (["modal", "transparentModal", "containedTransparentModal",
-      "formSheet"].includes(presentation)) {
+      "formSheet", "pageSheet"].includes(presentation)) {
       if (this.presentationMode !== NavDestinationMode.DIALOG) {
         this.presentationMode = NavDestinationMode.DIALOG
       }
