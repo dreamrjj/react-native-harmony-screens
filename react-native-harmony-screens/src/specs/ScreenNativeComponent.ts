@@ -104,7 +104,7 @@ export interface NativeProps extends ViewProps {
   swipeDirection?: WithDefault<SwipeDirection, "horizontal">;
   hideKeyboardOnSwipe?: boolean;
   activityState?: WithDefault<Float, -1.0>;
-  screenId?: string;
+  screenId?: WithDefault<string, ''>;
   navigationBarColor?: ColorValue;
   navigationBarTranslucent?: boolean;
   navigationBarHidden?: boolean;

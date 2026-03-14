@@ -37,14 +37,14 @@ interface ViewConfig extends View {
   viewConfig: {
     validAttributes: {
       style: {
-        display: boolean;
+        display:  boolean | null;
       };
     };
   };
   _viewConfig: {
     validAttributes: {
       style: {
-        display: boolean;
+        display:  boolean | null;
       };
     };
   };
@@ -190,6 +190,7 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
       sheetExpandsWhenScrolledToEdge = true,
       sheetElevation = 24,
       sheetInitialDetentIndex = 0,
+      screenId,
       // Other
       stackPresentation,
       // Events for override
@@ -260,13 +261,13 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
         if (ref?.viewConfig?.validAttributes?.style) {
           ref.viewConfig.validAttributes.style = {
             ...ref.viewConfig.validAttributes.style,
-            display: false,
+            display: null,
           };
           setRef(ref);
         } else if (ref?._viewConfig?.validAttributes?.style) {
           ref._viewConfig.validAttributes.style = {
             ...ref._viewConfig.validAttributes.style,
-            display: false,
+            display: null,
           };
           setRef(ref);
         }
@@ -315,6 +316,7 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
             // Detailed information can be found here https://github.com/software-mansion/react-native-screens/pull/2351
             style={[style, { zIndex: undefined, paddingTop: headerHeight, }]}
             activityState={activityState}
+            screenId={screenId}
             sheetAllowedDetents={resolvedSheetAllowedDetents}
             sheetLargestUndimmedDetent={resolvedSheetLargestUndimmedDetent}
             sheetElevation={sheetElevation}
