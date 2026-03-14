@@ -226,9 +226,21 @@ class RNSScreenStackHeaderConfigEventEmitter : public ViewEventEmitter {
   struct OnDetached {
       
     };
+
+  struct OnPressHeaderBarButtonItem {
+      std::string buttonId;
+    };
+
+  struct OnPressHeaderBarButtonMenuItem {
+      std::string menuId;
+    };
   void onAttached(OnAttached value) const;
 
   void onDetached(OnDetached value) const;
+
+  void onPressHeaderBarButtonItem(OnPressHeaderBarButtonItem value) const;
+
+  void onPressHeaderBarButtonMenuItem(OnPressHeaderBarButtonMenuItem value) const;
 };
 class RNSScreenStackHeaderSubviewEventEmitter : public ViewEventEmitter {
  public:

@@ -72,6 +72,8 @@ export namespace RNSScreenStackHeaderConfig {
     backButtonInCustomView?: boolean;
     blurEffect?: 'none' | 'extraLight' | 'light' | 'dark' | 'regular' | 'prominent' | 'systemUltraThinMaterial' | 'systemThinMaterial' | 'systemMaterial' | 'systemThickMaterial' | 'systemChromeMaterial' | 'systemUltraThinMaterialLight' | 'systemThinMaterialLight' | 'systemMaterialLight' | 'systemThickMaterialLight' | 'systemChromeMaterialLight' | 'systemUltraThinMaterialDark' | 'systemThinMaterialDark' | 'systemMaterialDark' | 'systemThickMaterialDark' | 'systemChromeMaterialDark';
     topInsetEnabled?: boolean;
+    headerLeftBarButtonItems?: object[];
+    headerRightBarButtonItems?: object[];
   }
   
   export interface Props extends ViewBaseProps {}
@@ -213,7 +215,14 @@ export namespace RNSScreenStackHeaderConfig {
           return new Color({ r: 0, g: 0, b: 0, a: 255})
         }
     }
-    
+
+    get headerLeftBarButtonItems() {
+      return this.rawProps.headerLeftBarButtonItems;
+    }
+
+    get headerRightBarButtonItems() {
+      return this.rawProps.headerRightBarButtonItems;
+    }
   }
 
   export type Descriptor = ComponentDescriptor<
@@ -238,6 +247,8 @@ export namespace RNSScreenStackHeaderConfig {
   export interface EventPayloadByName {
     "attached": {}
     "detached": {}
+    "onPressHeaderBarButtonItem": { buttonId: string }
+    "onPressHeaderBarButtonMenuItem": { menuId: string }
   }
   
   export class EventEmitter {

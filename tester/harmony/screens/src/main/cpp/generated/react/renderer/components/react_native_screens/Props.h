@@ -610,6 +610,8 @@ class RNSScreenStackHeaderConfigProps final : public ViewProps {
   bool backButtonInCustomView{false};
   RNSScreenStackHeaderConfigBlurEffect blurEffect{RNSScreenStackHeaderConfigBlurEffect::None};
   bool topInsetEnabled{false};
+  std::vector<folly::dynamic> headerLeftBarButtonItems{};
+  std::vector<folly::dynamic> headerRightBarButtonItems{};
 };
 
 enum class RNSScreenStackHeaderSubviewType { Back, Right, Left, Title, Center, SearchBar };
