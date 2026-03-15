@@ -50,6 +50,9 @@ export struct RNSSearchBar {
   @State headerIconColor: string | undefined = undefined
   @State shouldShowHintSearchIcon: boolean = true;
   @State tintColor: string = '';
+  @State autoFocus: boolean = false;
+  @State autoCapitalize: string = 'none';
+  onSearchFocusChange?: (focused: boolean) => void = undefined;
   private cleanupCommandCallback?: () => void = undefined;
 
   aboutToAppear() {
@@ -69,17 +72,17 @@ export struct RNSSearchBar {
         if (command === 'open') {
           if (!this.showTextInput) {
             this.showTextInput = true;
+            this.onSearchFocusChange?.(true)
           }
         } else if (command === 'close') {
           if (this.showTextInput) {
             this.getUIContext().getFocusController().clearFocus();
             this.showTextInput = false;
+            this.onSearchFocusChange?.(false)
           }
         } else if (command === 'focus') {
           this.showTextInput = true;
-          setTimeout(()=>{
-            this.getUIContext().getFocusController().requestFocus("search");
-          }, 50)
+          this.safeRequestSearchFocus(50);
         } else if (command === 'blur') {
           this.getUIContext().getFocusController().clearFocus();
         } else if (command === 'setText') {
@@ -87,11 +90,11 @@ export struct RNSSearchBar {
         } else if (command === 'clearText') {
           this.text = "";
         } else if (command === 'toggleCancelButton') {
-            if (args.toString() == 'true') {
-              this.cancelIconVisiblilty = Visibility.Visible;
-            } else {
-              this.cancelIconVisiblilty = Visibility.None;
-            }
+          if (args.toString() == 'true') {
+            this.cancelIconVisiblilty = Visibility.Visible;
+          } else {
+            this.cancelIconVisiblilty = Visibility.None;
+          }
         } else if (command === 'cancelSearch') {
           this.cancelSearch();
         }
@@ -121,6 +124,26 @@ export struct RNSSearchBar {
     this.headerIconColor = this.descriptor.rawProps["headerIconColor"];
     this.shouldShowHintSearchIcon = this.descriptor.rawProps["shouldShowHintSearchIcon"];
     this.tintColor = this.descriptor.rawProps["tintColor"];
+    this.autoFocus = this.descriptor.rawProps["autoFocus"];
+    const rawAutoCapitalize = this.descriptor.rawProps["autoCapitalize"] as string | undefined;
+    this.autoCapitalize =
+      (rawAutoCapitalize === 'systemDefault' || rawAutoCapitalize === 'none' || rawAutoCapitalize === 'words' ||
+        rawAutoCapitalize === 'sentences' || rawAutoCapitalize === 'characters') ? rawAutoCapitalize : 'none';
+  }
+
+  getAutoCapitalizationMode(): AutoCapitalizationMode | undefined {
+    switch (this.autoCapitalize) {
+      case 'words':
+        return AutoCapitalizationMode.WORDS;
+      case 'sentences':
+        return AutoCapitalizationMode.SENTENCES;
+      case 'characters':
+        return AutoCapitalizationMode.ALL_CHARACTERS;
+      case 'none':
+        return AutoCapitalizationMode.NONE;
+      default:
+        return undefined; // 表示不设置参数
+    }
   }
 
   aboutToDisappear() {
@@ -145,7 +168,23 @@ export struct RNSSearchBar {
   cancelSearch() {
     this.eventEmitter!.emit("cancelButtonPress", {})
     this.showTextInput = false;
+    this.onSearchFocusChange?.(false)
     this.eventEmitter!.emit("close", {})
+  }
+
+  private safeRequestSearchFocus(initialDelay: number) {
+    const tryFocus = (delay: number) => {
+      setTimeout(() => {
+        try {
+          this.getUIContext().getFocusController().requestFocus("search");
+        } catch (e) {
+          if (delay < 300) {
+            tryFocus(300);
+          }
+        }
+      }, delay);
+    };
+    tryFocus(initialDelay);
   }
 
   build() {
@@ -160,25 +199,33 @@ export struct RNSSearchBar {
               .placeholderColor(this.hintTextColor)
               .searchIcon({ color: this.headerIconColor, size: this.shouldShowHintSearchIcon?16:0 })
               .backgroundColor(this.backgroundColorValue)
-	            .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
+              .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
               .type(this.type)
               .focusable(true)
+              // .autoCapitalizationMode(AutoCapitalizationMode.WORDS) // API 20生效
               .onChange((value: string) => {
-              this.text = value
-              this.eventEmitter!.emit("changeText", { text: value })
-            })
-            .onFocus(() => {
-              this.eventEmitter!.emit("searchFocus", {})
-            })
-            .onBlur(() => {
-              this.eventEmitter!.emit("searchBlur", {})
-            })
-            .onSubmit(() => {
-              this.eventEmitter?.emit("searchButtonPress", {
-                text: this.text
+                this.text = value
+                this.eventEmitter!.emit("changeText", { text: value })
+              })
+              .onFocus(() => {
+                this.eventEmitter!.emit("searchFocus", {})
+                this.onSearchFocusChange?.(true)
+              })
+              .onBlur(() => {
+                this.eventEmitter!.emit("searchBlur", {})
+                this.onSearchFocusChange?.(false)
+              })
+              .onSubmit(() => {
+                this.eventEmitter?.emit("searchButtonPress", {
+                  text: this.text
                 })
               })
-            .id("search")
+              .id("search")
+              .onAppear(() => {
+                if (this.autoFocus) {
+                  this.safeRequestSearchFocus(50);
+                }
+              })
             Text(this.cancelButtonText)
               .fontColor(this.tintColor)
               .padding({ left: 5 })
@@ -205,5 +252,17 @@ export struct RNSSearchBar {
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.End)
     .layoutWeight(1)
+    .onAppear(() => {
+      this.onPageShow();
+    })
+  }
+
+  onPageShow(): void {
+    if (!this.descriptor) {
+      return;
+    }
+    if (this.autoFocus && !this.showTextInput) {
+      this.showTextInput = true;
+    }
   }
 }

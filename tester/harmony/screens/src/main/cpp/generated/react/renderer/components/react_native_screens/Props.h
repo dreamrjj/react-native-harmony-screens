@@ -212,6 +212,79 @@ class RNSModalScreenProps final : public ViewProps {
   bool nativeBackButtonDismissalEnabled{false};
 };
 
+enum class RNSSafeAreaViewInsetType { All, System, Interface };
+
+static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
+                                RNSSafeAreaViewInsetType &result) {
+    auto string = (std::string)value;
+    if (string == "all") {
+        result = RNSSafeAreaViewInsetType::All;
+        return;
+    }
+    if (string == "system") {
+        result = RNSSafeAreaViewInsetType::System;
+        return;
+    }
+    if (string == "interface") {
+        result = RNSSafeAreaViewInsetType::Interface;
+        return;
+    }
+    abort();
+}
+
+static inline std::string toString(const RNSSafeAreaViewInsetType &value) {
+    switch (value) {
+    case RNSSafeAreaViewInsetType::All:
+        return "all";
+    case RNSSafeAreaViewInsetType::System:
+        return "system";
+    case RNSSafeAreaViewInsetType::Interface:
+        return "interface";
+    }
+}
+struct RNSSafeAreaViewEdgesStruct {
+    bool top;
+    bool right;
+    bool bottom;
+    bool left;
+};
+
+static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
+                                RNSSafeAreaViewEdgesStruct &result) {
+    auto map = (std::unordered_map<std::string, RawValue>)value;
+
+    auto tmp_top = map.find("top");
+    if (tmp_top != map.end()) {
+        fromRawValue(context, tmp_top->second, result.top);
+    }
+    auto tmp_right = map.find("right");
+    if (tmp_right != map.end()) {
+        fromRawValue(context, tmp_right->second, result.right);
+    }
+    auto tmp_bottom = map.find("bottom");
+    if (tmp_bottom != map.end()) {
+        fromRawValue(context, tmp_bottom->second, result.bottom);
+    }
+    auto tmp_left = map.find("left");
+    if (tmp_left != map.end()) {
+        fromRawValue(context, tmp_left->second, result.left);
+    }
+}
+
+static inline std::string toString(const RNSSafeAreaViewEdgesStruct &value) {
+    return "[Object RNSSafeAreaViewEdgesStruct]";
+}
+class RNSSafeAreaViewProps final : public ViewProps {
+public:
+    RNSSafeAreaViewProps() = default;
+    RNSSafeAreaViewProps(const PropsParserContext &context, const RNSSafeAreaViewProps &sourceProps,
+                         const RawProps &rawProps);
+
+#pragma mark - Props
+
+    RNSSafeAreaViewEdgesStruct edges{};
+    RNSSafeAreaViewInsetType insetType{RNSSafeAreaViewInsetType::All};
+};
 class RNSScreenContainerProps final : public ViewProps {
  public:
   RNSScreenContainerProps() = default;
@@ -583,10 +656,11 @@ class RNSScreenStackProps final : public ViewProps {
   
 };
 
-enum class RNSSearchBarAutoCapitalize { None, Words, Sentences, Characters };
+enum class RNSSearchBarAutoCapitalize { Systemdefault, None, Words, Sentences, Characters };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSearchBarAutoCapitalize &result) {
   auto string = (std::string)value;
+  if (string == "systemDefault") { result = RNSSearchBarAutoCapitalize::Systemdefault; return; }
   if (string == "none") { result = RNSSearchBarAutoCapitalize::None; return; }
   if (string == "words") { result = RNSSearchBarAutoCapitalize::Words; return; }
   if (string == "sentences") { result = RNSSearchBarAutoCapitalize::Sentences; return; }
@@ -596,19 +670,23 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
 
 static inline std::string toString(const RNSSearchBarAutoCapitalize &value) {
   switch (value) {
+    case RNSSearchBarAutoCapitalize::Systemdefault: return "systemDefault";
     case RNSSearchBarAutoCapitalize::None: return "none";
     case RNSSearchBarAutoCapitalize::Words: return "words";
     case RNSSearchBarAutoCapitalize::Sentences: return "sentences";
     case RNSSearchBarAutoCapitalize::Characters: return "characters";
   }
 }
-enum class RNSSearchBarPlacement { Automatic, Inline, Stacked };
+enum class RNSSearchBarPlacement { Automatic, Inline, Stacked, Integrated, IntegratedButton, IntegratedCentered };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSearchBarPlacement &result) {
   auto string = (std::string)value;
   if (string == "automatic") { result = RNSSearchBarPlacement::Automatic; return; }
   if (string == "inline") { result = RNSSearchBarPlacement::Inline; return; }
   if (string == "stacked") { result = RNSSearchBarPlacement::Stacked; return; }
+  if (string == "integrated") { result = RNSSearchBarPlacement::Integrated; return; }
+  if (string == "integratedButton") { result = RNSSearchBarPlacement::IntegratedButton; return; }
+  if (string == "integratedCentered") { result = RNSSearchBarPlacement::IntegratedCentered; return; }
   abort();
 }
 
@@ -617,6 +695,9 @@ static inline std::string toString(const RNSSearchBarPlacement &value) {
     case RNSSearchBarPlacement::Automatic: return "automatic";
     case RNSSearchBarPlacement::Inline: return "inline";
     case RNSSearchBarPlacement::Stacked: return "stacked";
+    case RNSSearchBarPlacement::Integrated: return "integrated";
+    case RNSSearchBarPlacement::IntegratedButton: return "integratedButton";
+    case RNSSearchBarPlacement::IntegratedCentered: return "integratedCentered";
   }
 }
 
@@ -641,7 +722,159 @@ class RNSSearchBarProps final : public ViewProps {
   std::string inputType{};
   SharedColor hintTextColor{};
   SharedColor headerIconColor{};
+  bool autoFocus{false};
   bool shouldShowHintSearchIcon{true};
 };
 
+enum class RNSBottomTabsTabBarItemLabelVisibilityMode { Auto, Selected, Labeled, Unlabeled };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSBottomTabsTabBarItemLabelVisibilityMode &result) {
+  auto string = (std::string)value;
+  if (string == "auto") { result = RNSBottomTabsTabBarItemLabelVisibilityMode::Auto; return; }
+  if (string == "selected") { result = RNSBottomTabsTabBarItemLabelVisibilityMode::Selected; return; }
+  if (string == "labeled") { result = RNSBottomTabsTabBarItemLabelVisibilityMode::Labeled; return; }
+  if (string == "unlabeled") { result = RNSBottomTabsTabBarItemLabelVisibilityMode::Unlabeled; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSBottomTabsTabBarItemLabelVisibilityMode &value) {
+  switch (value) {
+    case RNSBottomTabsTabBarItemLabelVisibilityMode::Auto: return "auto";
+    case RNSBottomTabsTabBarItemLabelVisibilityMode::Selected: return "selected";
+    case RNSBottomTabsTabBarItemLabelVisibilityMode::Labeled: return "labeled";
+    case RNSBottomTabsTabBarItemLabelVisibilityMode::Unlabeled: return "unlabeled";
+  }
+}
+
+class RNSBottomTabsProps final : public ViewProps {
+ public:
+  RNSBottomTabsProps() = default;
+  RNSBottomTabsProps(const PropsParserContext& context, const RNSBottomTabsProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  SharedColor tabBarBackgroundColor{};
+  std::string tabBarItemTitleFontFamily{};
+  Float tabBarItemTitleFontSize{0.0};
+  Float tabBarItemTitleFontSizeActive{0.0};
+  std::string tabBarItemTitleFontWeight{};
+  std::string tabBarItemTitleFontStyle{};
+  SharedColor tabBarItemTitleFontColor{};
+  SharedColor tabBarItemTitleFontColorActive{};
+  SharedColor tabBarItemIconColor{};
+  SharedColor tabBarItemIconColorActive{};
+  SharedColor tabBarItemActiveIndicatorColor{};
+  bool tabBarItemActiveIndicatorEnabled{true};
+  SharedColor tabBarItemRippleColor{};
+  RNSBottomTabsTabBarItemLabelVisibilityMode tabBarItemLabelVisibilityMode{RNSBottomTabsTabBarItemLabelVisibilityMode::Auto};
+  SharedColor tabBarTintColor{};
+  bool controlNavigationStateInJS{false};
+  
+};
+
+enum class RNSBottomTabsScreenOrientation { Inherit, All, AllButUpsideDown, Portrait, PortraitUp, PortraitDown, Landscape, LandscapeLeft, LandscapeRight };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSBottomTabsScreenOrientation &result) {
+  auto string = (std::string)value;
+  if (string == "inherit") { result = RNSBottomTabsScreenOrientation::Inherit; return; }
+  if (string == "all") { result = RNSBottomTabsScreenOrientation::All; return; }
+  if (string == "allButUpsideDown") { result = RNSBottomTabsScreenOrientation::AllButUpsideDown; return; }
+  if (string == "portrait") { result = RNSBottomTabsScreenOrientation::Portrait; return; }
+  if (string == "portraitUp") { result = RNSBottomTabsScreenOrientation::PortraitUp; return; }
+  if (string == "portraitDown") { result = RNSBottomTabsScreenOrientation::PortraitDown; return; }
+  if (string == "landscape") { result = RNSBottomTabsScreenOrientation::Landscape; return; }
+  if (string == "landscapeLeft") { result = RNSBottomTabsScreenOrientation::LandscapeLeft; return; }
+  if (string == "landscapeRight") { result = RNSBottomTabsScreenOrientation::LandscapeRight; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSBottomTabsScreenOrientation &value) {
+  switch (value) {
+    case RNSBottomTabsScreenOrientation::Inherit: return "inherit";
+    case RNSBottomTabsScreenOrientation::All: return "all";
+    case RNSBottomTabsScreenOrientation::AllButUpsideDown: return "allButUpsideDown";
+    case RNSBottomTabsScreenOrientation::Portrait: return "portrait";
+    case RNSBottomTabsScreenOrientation::PortraitUp: return "portraitUp";
+    case RNSBottomTabsScreenOrientation::PortraitDown: return "portraitDown";
+    case RNSBottomTabsScreenOrientation::Landscape: return "landscape";
+    case RNSBottomTabsScreenOrientation::LandscapeLeft: return "landscapeLeft";
+    case RNSBottomTabsScreenOrientation::LandscapeRight: return "landscapeRight";
+  }
+}
+
+
+enum class RNSBottomTabsScreenSystemItem { None, Bookmarks, Contacts, Downloads, Favorites, Featured, History, More, MostRecent, MostViewed, Recents, Search, TopRated };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSBottomTabsScreenSystemItem &result) {
+  auto string = (std::string)value;
+  if (string == "none") { result = RNSBottomTabsScreenSystemItem::None; return; }
+  if (string == "bookmarks") { result = RNSBottomTabsScreenSystemItem::Bookmarks; return; }
+  if (string == "contacts") { result = RNSBottomTabsScreenSystemItem::Contacts; return; }
+  if (string == "downloads") { result = RNSBottomTabsScreenSystemItem::Downloads; return; }
+  if (string == "favorites") { result = RNSBottomTabsScreenSystemItem::Favorites; return; }
+  if (string == "featured") { result = RNSBottomTabsScreenSystemItem::Featured; return; }
+  if (string == "history") { result = RNSBottomTabsScreenSystemItem::History; return; }
+  if (string == "more") { result = RNSBottomTabsScreenSystemItem::More; return; }
+  if (string == "mostRecent") { result = RNSBottomTabsScreenSystemItem::MostRecent; return; }
+  if (string == "mostViewed") { result = RNSBottomTabsScreenSystemItem::MostViewed; return; }
+  if (string == "recents") { result = RNSBottomTabsScreenSystemItem::Recents; return; }
+  if (string == "search") { result = RNSBottomTabsScreenSystemItem::Search; return; }
+  if (string == "topRated") { result = RNSBottomTabsScreenSystemItem::TopRated; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSBottomTabsScreenSystemItem &value) {
+  switch (value) {
+    case RNSBottomTabsScreenSystemItem::None: return "none";
+    case RNSBottomTabsScreenSystemItem::Bookmarks: return "bookmarks";
+    case RNSBottomTabsScreenSystemItem::Contacts: return "contacts";
+    case RNSBottomTabsScreenSystemItem::Downloads: return "downloads";
+    case RNSBottomTabsScreenSystemItem::Favorites: return "favorites";
+    case RNSBottomTabsScreenSystemItem::Featured: return "featured";
+    case RNSBottomTabsScreenSystemItem::History: return "history";
+    case RNSBottomTabsScreenSystemItem::More: return "more";
+    case RNSBottomTabsScreenSystemItem::MostRecent: return "mostRecent";
+    case RNSBottomTabsScreenSystemItem::MostViewed: return "mostViewed";
+    case RNSBottomTabsScreenSystemItem::Recents: return "recents";
+    case RNSBottomTabsScreenSystemItem::Search: return "search";
+    case RNSBottomTabsScreenSystemItem::TopRated: return "topRated";
+  }
+}
+
+class RNSBottomTabsScreenProps final : public ViewProps {
+ public:
+  RNSBottomTabsScreenProps() = default;
+  RNSBottomTabsScreenProps(const PropsParserContext& context, const RNSBottomTabsScreenProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  bool isFocused{false};
+  std::string tabKey{};
+  std::string title{};
+  std::string badgeValue{};
+  RNSBottomTabsScreenOrientation orientation{RNSBottomTabsScreenOrientation::Inherit};
+  std::string iconResourceName{};
+  SharedColor tabBarItemBadgeTextColor{};
+  SharedColor tabBarItemBadgeBackgroundColor{};
+  folly::dynamic standardAppearance{};
+  folly::dynamic scrollEdgeAppearance{};
+  std::string iconSfSymbolName{};
+  std::string selectedIconSfSymbolName{};
+  RNSBottomTabsScreenSystemItem systemItem{RNSBottomTabsScreenSystemItem::None};
+  bool overrideScrollViewContentInsetAdjustmentBehavior{false};
+
+};
+    
+class RNSStackScreenProps final : public ViewProps {
+ public:
+  RNSStackScreenProps() = default;
+  RNSStackScreenProps(const PropsParserContext& context, const RNSStackScreenProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  int maxLifecycleState{0};
+  std::string screenKey{};
+
+};
+    
 } // namespace facebook::react

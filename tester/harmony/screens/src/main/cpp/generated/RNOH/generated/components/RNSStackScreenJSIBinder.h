@@ -6,10 +6,12 @@
 #include "RNOHCorePackage/ComponentBinders/ViewComponentJSIBinder.h"
 
 namespace rnoh {
-class RNSScreenNavigationContainerJSIBinder : public ViewComponentJSIBinder {
+class RNSStackScreenJSIBinder : public ViewComponentJSIBinder {
   protected:
     facebook::jsi::Object createNativeProps(facebook::jsi::Runtime &rt) override {
         auto object = ViewComponentJSIBinder::createNativeProps(rt);
+        object.setProperty(rt, "maxLifecycleState", true);
+        object.setProperty(rt, "screenKey", true);
         return object;
     }
 
@@ -25,6 +27,10 @@ class RNSScreenNavigationContainerJSIBinder : public ViewComponentJSIBinder {
 
     facebook::jsi::Object createDirectEventTypes(facebook::jsi::Runtime &rt) override {
         facebook::jsi::Object events(rt);
+        events.setProperty(rt, "topWillAppear", createDirectEvent(rt, "onWillAppear"));
+        events.setProperty(rt, "topDidAppear", createDirectEvent(rt, "onDidAppear"));
+        events.setProperty(rt, "topWillDisappear", createDirectEvent(rt, "onWillDisappear"));
+        events.setProperty(rt, "topDidDisappear", createDirectEvent(rt, "onDidDisappear"));
         return events;
     }
 };

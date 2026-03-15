@@ -9,8 +9,8 @@
 #include <react/renderer/components/react_native_screens/ShadowNodes.h>
 
 namespace rnoh {
-  class BaseRNSScreenNavigationContainerComponentInstance
-      : public CppComponentInstance<facebook::react::RNSScreenNavigationContainerShadowNode> {
+  class BaseRNSSafeAreaViewComponentInstance
+      : public CppComponentInstance<facebook::react::RNSSafeAreaViewShadowNode> {
   public:
     using CppComponentInstance::CppComponentInstance;
 

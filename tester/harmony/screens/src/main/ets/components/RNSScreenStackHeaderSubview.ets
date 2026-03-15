@@ -35,6 +35,7 @@ export struct RNSScreenStackHeaderSubview {
   public ctx!: RNComponentContext
   public tag!: number
   public isFirstScreenInStack!: boolean
+  onSearchFocusChange?: (focused: boolean) => void = undefined
   @State descriptor: RNSScreenStackHeaderSubviewDescriptor | undefined = undefined
   private cleanUpCallbacks: (() => void)[] = []
   @State alignment: HorizontalAlign = HorizontalAlign.Center
@@ -95,7 +96,8 @@ export struct RNSScreenStackHeaderSubview {
       RNSSearchBar({
         ctx: this.ctx,
         tag: this.searchBarTag,
-        isFirstScreenInStack: this.isFirstScreenInStack
+        isFirstScreenInStack: this.isFirstScreenInStack,
+        onSearchFocusChange: this.onSearchFocusChange
       })
     } else if (this.subviewType !== 'searchBar') {
       Column() {

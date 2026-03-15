@@ -34,8 +34,15 @@ import { RNSScreenStackHeaderSubview } from './components/RNSScreenStackHeaderSu
 import { RNSScreenStackHeaderConfig } from './components/RNSScreenStackHeaderConfig'
 import { RNSSearchBar } from './components/RNSSearchBar';
 import { RNSScreenContentWrapper } from "./components/RNSScreenContentWrapper";
+// import { RNSBottomTabs } from './components/RNSBottomTabs';
+// import { RNSBottomTabsScreen } from './components/RNSBottomTabsScreen';
+// import { RNSScreenStackHost } from './components/RNSScreenStackHost';
+// import { RNSStackScreen } from './components/RNSStackScreen';
+// import { RNSSplitViewHost } from './components/RNSSplitViewHost';
+// import { RNSSplitViewScreen } from './components/RNSSplitViewScreen';
 
 import { RNSModule } from './modules/RNSModule'
+import { RNSSafeAreaView } from "./components/RNSSafeAreaView";
 
 @Builder
 export function componentBuilder(ctx: ComponentBuilderContext) {
@@ -90,6 +97,44 @@ export function componentBuilder(ctx: ComponentBuilderContext) {
       tag: ctx.tag,
     })
   }
+  /** else if (ctx.componentName == RNSBottomTabs.NAME) {
+    RNSBottomTabs({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSBottomTabsScreen.NAME) {
+    RNSBottomTabsScreen({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSScreenStackHost.NAME) {
+    RNSScreenStackHost({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSStackScreen.NAME) {
+    RNSStackScreen({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSSplitViewHost.NAME) {
+    RNSSplitViewHost({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSSplitViewScreen.NAME) {
+    RNSSplitViewScreen({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  } else if (ctx.componentName == RNSSafeAreaView.NAME) {
+    RNSSafeAreaView({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag,
+    })
+  }
+   **/
+
 }
 
 export default class RNOHScreensPackage extends RNOHPackage {
@@ -118,6 +163,14 @@ export default class RNOHScreensPackage extends RNOHPackage {
       .set(RNSScreenStack.NAME, wrapBuilder(componentBuilder))
       .set(RNSScreenStackHeaderSubview.NAME, wrapBuilder(componentBuilder))
       .set(RNSScreenStackHeaderConfig.NAME, wrapBuilder(componentBuilder))
-      .set(RNSSearchBar.NAME, wrapBuilder(componentBuilder))
+      /** .set(RNSSearchBar.NAME, wrapBuilder(componentBuilder))
+      .set(RNSBottomTabs.NAME, wrapBuilder(componentBuilder))
+      .set(RNSBottomTabsScreen.NAME, wrapBuilder(componentBuilder))
+      .set(RNSScreenStackHost.NAME, wrapBuilder(componentBuilder))
+      .set(RNSStackScreen.NAME, wrapBuilder(componentBuilder))
+      .set(RNSSplitViewHost.NAME, wrapBuilder(componentBuilder))
+      .set(RNSSplitViewScreen.NAME, wrapBuilder(componentBuilder))
+      .set(RNSSafeAreaView.NAME, wrapBuilder(componentBuilder))
+       **/
   }
 }
