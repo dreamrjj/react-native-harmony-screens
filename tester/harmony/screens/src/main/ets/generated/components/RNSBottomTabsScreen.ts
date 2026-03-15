@@ -39,172 +39,145 @@ import {
   ViewPropsSelector,
 } from '@rnoh/react-native-openharmony/ts';
 
-
-export namespace RNSSearchBar {
-  export const NAME = "RNSSearchBar" as const
+export namespace RNSBottomTabsScreen {
+  export const NAME = "RNSBottomTabsScreen" as const
 
   export interface DirectRawProps {
-    hideWhenScrolling?: boolean;
-    autoCapitalize?: 'systemDefault' | 'none' | 'words' | 'sentences' | 'characters';
-    placeholder?: string;
-    placement?: 'automatic' | 'inline' | 'stacked' | 'integrated' | 'integratedButton' | 'integratedCentered';
-    obscureBackground?: boolean;
-    hideNavigationBar?: boolean;
-    cancelButtonText?: string;
-    barTintColor?: ColorValue;
-    tintColor?: ColorValue;
-    textColor?: ColorValue;
-    disableBackButtonOverride?: boolean;
-    inputType?: string;
-    hintTextColor?: ColorValue;
-    headerIconColor?: ColorValue;
-    autoFocus?: boolean;
-    shouldShowHintSearchIcon?: boolean;
+    tabKey: string;
+    title?: string | null;
+    badgeValue?: string;
+    iconResource?: {uri?: string};
+    iconType?: 'image' | 'template' | 'sfSymbol';
+    iconImageSource?: {uri?: string};
+    iconSfSymbolName?: string;
+    selectedIconImageSource?: {uri?: string};
+    selectedIconSfSymbolName?: string;
+    orientation?: 'inherit' | 'all' | 'allButUpsideDown' | 'portrait' | 'portraitUp' | 'portraitDown' | 'landscape' | 'landscapeLeft' | 'landscapeRight';
+    isFocused?: boolean;
+    tabBarItemBadgeTextColor?: ColorValue | undefined;
+    tabBarItemBadgeBackgroundColor?: ColorValue | undefined;
+    systemItem?: 'none' | 'bookmarks' | 'contacts' | 'downloads' | 'favorites' | 'featured' | 'history' | 'more' | 'mostRecent' | 'mostViewed' | 'recents' | 'search' | 'topRated';
+    specialEffects?: {
+      repeatedTabSelection?: {
+        popToRoot?: boolean;
+        scrollToTop?: boolean;
+      };
+    };
   }
-  
+
   export interface Props extends ViewBaseProps {}
-  
+
   export interface State {}
-  
+
   export interface RawProps extends ViewRawProps, DirectRawProps {}
-  
+
   export class PropsSelector extends ViewPropsSelector<Props, RawProps> {
-    get hideWhenScrolling() {
-      return this.rawProps.hideWhenScrolling ?? false;
+    get tabKey() {
+      return this.rawProps.tabKey ?? "";
     }
-    
-    get autoCapitalize() {
-      return this.rawProps.autoCapitalize ?? 'none';
+
+    get title() {
+      return this.rawProps.title ?? "";
     }
-    
-    get placeholder() {
-      return this.rawProps.placeholder;
+
+    get badgeValue() {
+      return this.rawProps.badgeValue ?? "";
     }
-    
-    get placement() {
-      return this.rawProps.placement ?? 'stacked';
+
+    get iconResource() {
+      return this.rawProps.iconResource;
     }
-    
-    get obscureBackground() {
-      return this.rawProps.obscureBackground ?? false;
+
+    get iconType() {
+      return this.rawProps.iconType ?? 'image';
     }
-    
-    get hideNavigationBar() {
-      return this.rawProps.hideNavigationBar ?? false;
+
+    get iconImageSource() {
+      return this.rawProps.iconImageSource;
     }
-    
-    get cancelButtonText() {
-      return this.rawProps.cancelButtonText;
+
+    get iconSfSymbolName() {
+      return this.rawProps.iconSfSymbolName ?? "";
     }
-    
-    get disableBackButtonOverride() {
-      return this.rawProps.disableBackButtonOverride ?? false;
+
+    get selectedIconImageSource() {
+      return this.rawProps.selectedIconImageSource;
     }
-    
-    get inputType() {
-      return this.rawProps.inputType;
+
+    get selectedIconSfSymbolName() {
+      return this.rawProps.selectedIconSfSymbolName ?? "";
     }
-    
-    get shouldShowHintSearchIcon() {
-      return this.rawProps.shouldShowHintSearchIcon ?? true;
+
+    get orientation() {
+      return this.rawProps.orientation ?? 'inherit';
     }
-    
-  
-    get barTintColor() {
-        if (this.rawProps.barTintColor) {
-          return Color.fromColorValue(this.rawProps.barTintColor)
-        } else {
-          return new Color({ r: 0, g: 0, b: 0, a: 255})
-        }
+
+    get isFocused() {
+      return this.rawProps.isFocused ?? false;
     }
-    
-    get tintColor() {
-        if (this.rawProps.tintColor) {
-          return Color.fromColorValue(this.rawProps.tintColor)
-        } else {
-          return new Color({ r: 0, g: 0, b: 0, a: 255})
-        }
+
+    get tabBarItemBadgeBackgroundColor() {
+      return this.tabBarItemBadgeBackgroundColor ?? '#FF3B30';
     }
-    
-    get textColor() {
-        if (this.rawProps.textColor) {
-          return Color.fromColorValue(this.rawProps.textColor)
-        } else {
-          return new Color({ r: 0, g: 0, b: 0, a: 255})
-        }
+
+    get tabBarItemBadgeTextColor() {
+      return this.tabBarItemBadgeTextColor ?? '#FFFFFF';
     }
-    
-    get hintTextColor() {
-        if (this.rawProps.hintTextColor) {
-          return Color.fromColorValue(this.rawProps.hintTextColor)
-        } else {
-          return new Color({ r: 0, g: 0, b: 0, a: 255})
-        }
+
+    get systemItem() {
+      return this.rawProps.systemItem ?? 'none';
     }
-    
-    get headerIconColor() {
-        if (this.rawProps.headerIconColor) {
-          return Color.fromColorValue(this.rawProps.headerIconColor)
-        } else {
-          return new Color({ r: 0, g: 0, b: 0, a: 255})
-        }
+
+    get specialEffects() {
+      return this.rawProps.specialEffects;
     }
-    
   }
 
   export type Descriptor = ComponentDescriptor<
-    typeof NAME,
-    Props,
-    State,
-    RawProps
+  typeof NAME,
+  Props,
+  State,
+  RawProps
   >;
-  
+
   export class DescriptorWrapper extends ViewDescriptorWrapperBase<
-    typeof NAME,
-    Props,
-    State,
-    RawProps,
-    PropsSelector
+  typeof NAME,
+  Props,
+  State,
+  RawProps,
+  PropsSelector
   > {
     protected createPropsSelector() {
       return new PropsSelector(this.descriptor.props, this.descriptor.rawProps)
     }
   }
-  
+
   export interface EventPayloadByName {
-    "searchFocus": {}
-    "searchBlur": {}
-    "searchButtonPress": {text?: string}
-    "cancelButtonPress": {}
-    "changeText": {text?: string}
-    "close": {}
-    "open": {}
+    "willAppear": {}
+    "didAppear": {}
+    "willDisappear": {}
+    "didDisappear": {}
+    "lifecycleStateChange": {previousState: number, newState: number}
   }
-  
+
   export class EventEmitter {
     constructor(private rnInstance: RNInstance, private tag: Tag) {}
-    
+
     emit<TEventName extends keyof EventPayloadByName>(eventName: TEventName, payload: EventPayloadByName[TEventName]) {
       this.rnInstance.emitComponentEvent(this.tag, eventName, payload)
     }
   }
-  
+
   export interface CommandArgvByName {
-    "blur": []
-    "focus": []
-    "clearText": []
-    "toggleCancelButton": [boolean]
-    "setText": [string]
-    "cancelSearch": []
   }
-  
+
   export class CommandReceiver {
     private listenersByCommandName = new Map<string, Set<(...args: any[]) => void>>()
     private cleanUp: (() => void) | undefined = undefined
-  
+
     constructor(private componentCommandReceiver: RNComponentCommandReceiver, private tag: Tag) {
     }
-  
+
     subscribe<TCommandName extends keyof CommandArgvByName>(commandName: TCommandName, listener: (argv: CommandArgvByName[TCommandName]) => void) {
       if (!this.listenersByCommandName.has(commandName)) {
         this.listenersByCommandName.set(commandName, new Set())
@@ -221,7 +194,7 @@ export namespace RNSSearchBar {
           }
         })
       }
-  
+
       return () => {
         this.listenersByCommandName.get(commandName)?.delete(listener)
         if (this.listenersByCommandName.get(commandName)?.size ?? 0 === 0) {

@@ -86,6 +86,8 @@ export struct RNSScreen {
   public screenPropsChange: (replaceAnimation: string, presentation: string,
     transitionDuration: number | undefined) => void = (r: string, p: string, t: number | undefined) => {
   };
+  public backPressedChange: (screenTag: number| undefined, backPressedFlag: boolean) => void = (tag: number| undefined, flag: boolean)=>{}
+  private backPressedFlag: boolean = false; // 返回按钮或系统返回触发标志
   private gestureEnabled: boolean = false;
   private fullScreenSwipeEnabled: boolean = false;
   private customAnimationOnSwipe: boolean = false;
@@ -121,6 +123,10 @@ export struct RNSScreen {
   @State translateYValue: string = '0';
   @State opacityValue: number = 1;
   @State screenOrientation: string = 'default';
+  // 记录该页面最后一次下发到 window 的方向，避免重复设置与干扰其他页面
+  private lastAppliedOrientation: number = -1;
+  private appliedByThisScreen: boolean = false;
+
   @State sheetAllowedDetents: number[] = [];
   @State sheetLargestUndimmedDetent: number = 0;
   @State sheetInitialDetent: number = 0;
@@ -425,12 +431,17 @@ export struct RNSScreen {
     if (!this.descriptor) {
       return;
     }
-    let orientation: string = this.descriptor.rawProps["screenOrientation"];
-    let orientationTmp = -1; // window.Orientation.UNSPECIFIED;
-    if (this.pageId !== "default" && this.pageId === RNSScreen.TOP_PAGEID) {
-      this.screenOrientation = orientation;
 
-      if (this.screenOrientation == "all") {
+    if (this.pageId === "default" || this.pageId !== RNSScreen.TOP_PAGEID) {
+      return;
+    }
+
+    let orientation: string = this.descriptor.rawProps["screenOrientation"];
+    let orientationTmp = -1; // window.Orientation.UNSPECIFIED
+
+    this.screenOrientation = orientation;
+
+    if (this.screenOrientation == "all") {
         orientationTmp = window.Orientation.AUTO_ROTATION;
       } else if (this.screenOrientation == "portrait") {
         orientationTmp = window.Orientation.PORTRAIT;
@@ -448,11 +459,60 @@ export struct RNSScreen {
         orientationTmp = window.Orientation.UNSPECIFIED;
       }
 
-      let context = getContext(this) as common.UIAbilityContext;
-      window.getLastWindow(context).then((lastWindow) => {
-        lastWindow.setPreferredOrientation(orientationTmp);
-      });
+      this.applyOrientation(orientationTmp, true);
+  }
+
+  private restoreDefaultOrientation(markOwner: boolean = false) {
+    this.applyOrientation(window.Orientation.UNSPECIFIED, markOwner);
+  }
+
+  private applyOrientation(orientationTmp: number, markOwner: boolean = true) {
+    if (markOwner && this.appliedByThisScreen && this.lastAppliedOrientation === orientationTmp) {
+      return;
     }
+
+    try {
+      let context = getContext(this) as common.UIAbilityContext;
+      if (!context) {
+        this.logger?.error('RNSScreen applyOrientation: uiAbilityContext is null');
+        return;
+      }
+      window.getLastWindow(context).then((lastWindow) => {
+        if (!lastWindow) {
+          this.logger?.error('RNSScreen applyOrientation: getLastWindow returned null');
+          return;
+        }
+        lastWindow.setPreferredOrientation(orientationTmp);
+        this.lastAppliedOrientation = orientationTmp;
+        if (markOwner) {
+          this.appliedByThisScreen = true;
+          RNSScreen.RECORD_TOP_PAGEID = this.pageId;
+        }
+      }).catch((error: Error) => {
+        this.logger?.error('RNSScreen applyOrientation getLastWindow error: ' + error);
+      })
+    } catch (error) {
+      this.logger?.error('RNSScreen applyOrientation context error: ' + error);
+    }
+  }
+
+  private releaseScreenOrientation() {
+    if (this.pageId === "default") {
+      return;
+    }
+    if (!this.appliedByThisScreen) {
+      return;
+    }
+    if (RNSScreen.RECORD_TOP_PAGEID !== this.pageId) {
+      return;
+    }
+    if (RNSScreen.TOP_PAGEID === this.pageId) {
+      return;
+    }
+
+    this.restoreDefaultOrientation(false);
+    this.appliedByThisScreen = false;
+    RNSScreen.RECORD_TOP_PAGEID = 'default';
   }
 
   private isRtl() {
@@ -482,7 +542,13 @@ export struct RNSScreen {
     if (!this.gestureEnabled || !this.fullScreenSwipeEnabled) {
       return false;
     }
+    if (JSON.stringify(this.gestureEnabled) === '"false"' || JSON.stringify(this.gestureEnabled) === '"undefined"') {
+      return false;
+    }
 
+    if (JSON.stringify(this.fullScreenSwipeEnabled) === '"false"' || JSON.stringify(this.fullScreenSwipeEnabled) === '"undefined"') {
+      return false;
+    }
     let inDistance: boolean = this.isInGestureResponseDistance(event);
     if (!inDistance) {
       return false;
@@ -547,6 +613,7 @@ export struct RNSScreen {
   }
 
   private backBtnPressed() {
+    this.stackController?.pop();
     this.backPressed();
   }
 
@@ -615,17 +682,13 @@ export struct RNSScreen {
 
   private backPressed() {
     let pathArray = this.stackController?.getAllPathName();
-    if (pathArray?.length && pathArray?.length > 1) {
-      if (this.preventNativeDismiss) {
-        this.eventEmitter!.emit("nativeDismissCancelled", {
-          dismissCount: this.dismissCount
-        })
-      } else {
-        this.eventEmitter!.emit("dismissed", {
-          dismissCount: this.dismissCount
-        })
-        this.eventEmitter!.emit("headerBackButtonClicked", {});
-      }
+    if(!this.preventNativeDismiss) {
+      this.backPressedFlag = true;
+      this.backPressedChange(this.tag, this.backPressedFlag);
+    } else if (pathArray?.length && pathArray?.length > 1) {
+      this.eventEmitter!.emit("nativeDismissCancelled", {
+        dismissCount: this.dismissCount
+      })
     }
   }
 
@@ -679,6 +742,7 @@ export struct RNSScreen {
     })
     .onDisAppear(() => {
       this.logger.debug('onDisAppear ' + this.pageId + ' , screenId: ' + this.descriptor.rawProps["screenId"])
+      this.releaseScreenOrientation();
       this.customTransitionCoordinator?.unregisterNavParam(this.pageId);
       this.eventEmitter!.emit("disappear", {})
     })

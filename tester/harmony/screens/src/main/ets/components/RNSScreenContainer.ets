@@ -229,7 +229,7 @@ export struct RNSScreenContainer {
         } else if (operation == NavigationOperation.POP && this.replaceAnimation === 'push') {
           if ((RNSScreenContainer.RECORD_PRESENTATION === 'transparentModal' 
           || RNSScreenContainer.RECORD_PRESENTATION === 'containedTransparentModal' 
-          || RNSScreenContainer.RECORD_PRESENTATION === 'formSheet'
+          || RNSScreenContainer.RECORD_PRESENTATION === 'formSheet' 
           || RNSScreenContainer.RECORD_PRESENTATION === 'pageSheet') 
           && RNSScreenContainer.RECORD_PRESENTATION !== this.presentation) {
             RNSScreenContainer.RECORD_PRESENTATION = this.presentation
@@ -254,7 +254,7 @@ export struct RNSScreenContainer {
           RNSScreenContainer.RECORD_PRESENTATION = this.presentation;
           if (this.presentation === 'transparentModal' 
           || this.presentation === 'containedTransparentModal' 
-          || this.presentation === 'formSheet'
+          || this.presentation === 'formSheet' 
           || this.presentation === 'pageSheet') {
             currentAnimation = fromParam.hideAnimation;
             animationType = toParam.getAnimationType();

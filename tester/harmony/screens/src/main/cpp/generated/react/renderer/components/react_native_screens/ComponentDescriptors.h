@@ -48,9 +48,14 @@ using RNSSearchBarComponentDescriptor = ConcreteComponentDescriptor<RNSSearchBar
        
 using RNSFullWindowOverlayComponentDescriptor = ConcreteComponentDescriptor<RNSFullWindowOverlayShadowNode>;
 using RNSModalScreenComponentDescriptor = ConcreteComponentDescriptor<RNSModalScreenShadowNode>;
+using RNSSafeAreaViewComponentDescriptor = ConcreteComponentDescriptor<RNSSafeAreaViewShadowNode>;
 using RNSScreenComponentDescriptor = ConcreteComponentDescriptor<RNSScreenShadowNode>;
 using RNSScreenStackHeaderConfigComponentDescriptor = ConcreteComponentDescriptor<RNSScreenStackHeaderConfigShadowNode>;
 using RNSScreenStackHeaderSubviewComponentDescriptor = ConcreteComponentDescriptor<RNSScreenStackHeaderSubviewShadowNode>;
+
+using RNSBottomTabsScreenComponentDescriptor = ConcreteComponentDescriptor<RNSBottomTabsScreenShadowNode>;
+using RNSBottomTabsComponentDescriptor = ConcreteComponentDescriptor<RNSBottomTabsShadowNode>;
+using RNSStackScreenComponentDescriptor = ConcreteComponentDescriptor<RNSStackScreenShadowNode>;
 
 void react_native_screens_registerComponentDescriptorsFromCodegen(
   std::shared_ptr<const ComponentDescriptorProviderRegistry> registry);

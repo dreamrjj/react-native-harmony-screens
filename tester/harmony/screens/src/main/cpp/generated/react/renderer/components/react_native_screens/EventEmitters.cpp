@@ -138,8 +138,22 @@ $payload.setProperty(runtime, "isStable", $event.isStable);
   });
 }
 
+void RNSSafeAreaViewEventEmitter::onStatusBarHeightChange(OnStatusBarHeightChange $event) const {
+  dispatchEvent("statusBarHeightChange", [$event=std::move($event)](jsi::Runtime &runtime) {
+    auto $payload = jsi::Object(runtime);
+    $payload.setProperty(runtime, "statusBarHeight", $event.statusBarHeight);
+    return $payload;
+  });
+}
 
 
+void RNSSafeAreaViewEventEmitter::onNavigationBarHeightChange(OnNavigationBarHeightChange $event) const {
+  dispatchEvent("navigationBarHeightChange", [$event=std::move($event)](jsi::Runtime &runtime) {
+    auto $payload = jsi::Object(runtime);
+    $payload.setProperty(runtime, "navigationBarHeight", $event.navigationBarHeight);
+    return $payload;
+  });
+}
 
 
 void RNSScreenEventEmitter::onAppear(OnAppear $event) const {
@@ -332,6 +346,114 @@ void RNSSearchBarEventEmitter::onOpen(OnOpen $event) const {
     auto $payload = jsi::Object(runtime);
     
     return $payload;
+  });
+}
+
+void RNSBottomTabsEventEmitter::onNativeFocusChange(OnNativeFocusChange event) const {
+  dispatchEvent("onNativeFocusChange", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "tabKey", event.tabKey);
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsEventEmitter::onRepeatedTabSelection(OnRepeatedTabSelection event) const {
+  dispatchEvent("repeatedTabSelection", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "tabKey", event.tabKey);
+{
+  auto specialEffects = jsi::Object(runtime);
+  {
+    auto repeatedTabSelection = jsi::Object(runtime);
+    repeatedTabSelection.setProperty(runtime, "popToRoot", event.specialEffects.repeatedTabSelection.popToRoot);
+    repeatedTabSelection.setProperty(runtime, "scrollToTop", event.specialEffects.repeatedTabSelection.scrollToTop);
+    specialEffects.setProperty(runtime, "repeatedTabSelection", repeatedTabSelection);
+  }
+  payload.setProperty(runtime, "specialEffects", specialEffects);
+}
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsScreenEventEmitter::onLifecycleStateChange(OnLifecycleStateChange event) const {
+  dispatchEvent("lifecycleStateChange", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "previousState", event.previousState);
+payload.setProperty(runtime, "newState", event.newState);
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsScreenEventEmitter::onWillAppear(OnWillAppear event) const {
+  dispatchEvent("willAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsScreenEventEmitter::onDidAppear(OnDidAppear event) const {
+  dispatchEvent("didAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsScreenEventEmitter::onWillDisappear(OnWillDisappear event) const {
+  dispatchEvent("willDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSBottomTabsScreenEventEmitter::onDidDisappear(OnDidDisappear event) const {
+  dispatchEvent("didDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+    
+void RNSStackScreenEventEmitter::onWillAppear(OnWillAppear event) const {
+  dispatchEvent("willAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSStackScreenEventEmitter::onDidAppear(OnDidAppear event) const {
+  dispatchEvent("didAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSStackScreenEventEmitter::onWillDisappear(OnWillDisappear event) const {
+  dispatchEvent("willDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSStackScreenEventEmitter::onDidDisappear(OnDidDisappear event) const {
+  dispatchEvent("didDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
   });
 }
 

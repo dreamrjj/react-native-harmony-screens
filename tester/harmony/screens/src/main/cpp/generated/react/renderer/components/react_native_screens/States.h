@@ -171,6 +171,40 @@ public:
 #endif
 };
     
+class RNSBottomTabsScreenState {
+public:
+  RNSBottomTabsScreenState() = default;
+
+#ifdef ANDROID
+  RNSBottomTabsScreenState(RNSBottomTabsScreenState const &previousState, folly::dynamic data){};
+  folly::dynamic getDynamic() const {
+    return {};
+  };
+#endif
+};
+            
+class RNSBottomTabsState {
+public:
+  RNSBottomTabsState() = default;
+
+#ifdef ANDROID
+  RNSBottomTabsState(RNSBottomTabsState const &previousState, folly::dynamic data){};
+  folly::dynamic getDynamic() const {
+    return {};
+  };
+#endif
+};
     
+class RNSStackScreenState {
+public:
+  RNSStackScreenState() = default;
+
+#ifdef ANDROID
+  RNSScreenStackScreenState(RNSStackScreenState const &previousState, folly::dynamic data){};
+  folly::dynamic getDynamic() const {
+    return {};
+  };
+#endif
+};
 
 } // namespace facebook::react

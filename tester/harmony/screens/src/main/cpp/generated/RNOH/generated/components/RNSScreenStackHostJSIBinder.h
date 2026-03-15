@@ -6,7 +6,7 @@
 #include "RNOHCorePackage/ComponentBinders/ViewComponentJSIBinder.h"
 
 namespace rnoh {
-class RNSScreenNavigationContainerJSIBinder : public ViewComponentJSIBinder {
+class RNSScreenStackHostJSIBinder : public ViewComponentJSIBinder {
   protected:
     facebook::jsi::Object createNativeProps(facebook::jsi::Runtime &rt) override {
         auto object = ViewComponentJSIBinder::createNativeProps(rt);

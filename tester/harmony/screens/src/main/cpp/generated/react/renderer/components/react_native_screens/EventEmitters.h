@@ -291,4 +291,107 @@ class RNSSearchBarEventEmitter : public ViewEventEmitter {
 
   void onOpen(OnOpen value) const;
 };
+    
+class RNSBottomTabsEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnNativeFocusChange {
+      std::string tabKey;
+    };
+
+  struct OnRepeatedTabSelectionSpecialEffectsRepeatedTabSelection {
+      bool popToRoot;
+    bool scrollToTop;
+    };
+
+  struct OnRepeatedTabSelectionSpecialEffects {
+      OnRepeatedTabSelectionSpecialEffectsRepeatedTabSelection repeatedTabSelection;
+    };
+
+  struct OnRepeatedTabSelection {
+      std::string tabKey;
+    OnRepeatedTabSelectionSpecialEffects specialEffects;
+    };
+  void onNativeFocusChange(OnNativeFocusChange value) const;
+
+  void onRepeatedTabSelection(OnRepeatedTabSelection value) const;
+};
+class RNSBottomTabsScreenEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnLifecycleStateChange {
+      int previousState;
+    int newState;
+    };
+
+  struct OnWillAppear {
+      
+    };
+
+  struct OnDidAppear {
+      
+    };
+
+  struct OnWillDisappear {
+      
+    };
+
+  struct OnDidDisappear {
+      
+    };
+  void onLifecycleStateChange(OnLifecycleStateChange value) const;
+
+  void onWillAppear(OnWillAppear value) const;
+
+  void onDidAppear(OnDidAppear value) const;
+
+  void onWillDisappear(OnWillDisappear value) const;
+
+  void onDidDisappear(OnDidDisappear value) const;
+};
+    
+class RNSStackScreenEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnWillAppear {
+      
+    };
+
+  struct OnDidAppear {
+      
+    };
+
+  struct OnWillDisappear {
+      
+    };
+
+  struct OnDidDisappear {
+      
+    };
+  void onWillAppear(OnWillAppear value) const;
+
+  void onDidAppear(OnDidAppear value) const;
+
+  void onWillDisappear(OnWillDisappear value) const;
+
+  void onDidDisappear(OnDidDisappear value) const;
+};
+class RNSSafeAreaViewEventEmitter : public ViewEventEmitter {
+public:
+    using ViewEventEmitter::ViewEventEmitter;
+
+    struct OnStatusBarHeightChange {
+        double statusBarHeight;
+    };
+
+    struct OnNavigationBarHeightChange {
+        double navigationBarHeight;
+    };
+    void onStatusBarHeightChange(OnStatusBarHeightChange value) const;
+
+    void onNavigationBarHeightChange(OnNavigationBarHeightChange value) const;
+};
 } // namespace facebook::react
