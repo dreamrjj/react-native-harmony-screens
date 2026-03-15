@@ -12,6 +12,23 @@ export function executeNativeBackPress() {
   return true;
 }
 
+export const isHeaderBarButtonsAvailableForCurrentPlatform =
+  Platform.OS === 'ios';
+
+type OptionalBoolean = 'undefined' | 'false' | 'true';
+export function parseBooleanToOptionalBooleanNativeProp(
+  prop: boolean | undefined,
+): OptionalBoolean {
+  switch (prop) {
+    case undefined:
+      return 'undefined';
+    case true:
+      return 'true';
+    case false:
+      return 'false';
+  }
+}
+
 /**
  * Exposes information useful for downstream navigation library implementers,
  * so they can keep reasonable backward compatibility, if desired.
