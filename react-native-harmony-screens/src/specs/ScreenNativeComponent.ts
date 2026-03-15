@@ -1,14 +1,15 @@
 'use client';
 
-import codegenNativeComponent from "react-native/Libraries/Utilities/codegenNativeComponent";
-import type { ViewProps, ColorValue } from "react-native";
+// eslint-disable-next-line @react-native/no-deep-imports
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import type { ViewProps, ColorValue } from 'react-native';
 import type {
   DirectEventHandler,
   WithDefault,
   Int32,
   Float,
   Double,
-} from "react-native/Libraries/Types/CodegenTypes";
+} from 'react-native/Libraries/Types/CodegenTypes';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type ScreenEvent = Readonly<{}>;
@@ -40,44 +41,49 @@ type GestureResponseDistanceType = Readonly<{
 }>;
 
 type StackPresentation =
-  | "push"
-  | "modal"
-  | "transparentModal"
-  | "fullScreenModal"
-  | "formSheet"
-  | "containedModal"
-  | "containedTransparentModal"
-  | "pageSheet";
+  | 'push'
+  | 'modal'
+  | 'transparentModal'
+  | 'fullScreenModal'
+  | 'formSheet'
+  | 'pageSheet'
+  | 'containedModal'
+  | 'containedTransparentModal';
 
 type StackAnimation =
-  | "default"
-  | "flip"
-  | "simple_push"
-  | "none"
-  | "fade"
-  | "slide_from_right"
-  | "slide_from_left"
-  | "slide_from_bottom"
-  | "fade_from_bottom"
+  | 'default'
+  | 'flip'
+  | 'simple_push'
+  | 'none'
+  | 'fade'
+  | 'slide_from_right'
+  | 'slide_from_left'
+  | 'slide_from_bottom'
+  | 'fade_from_bottom'
   | 'ios_from_right'
   | 'ios_from_left';
 
-type SwipeDirection = "vertical" | "horizontal";
+type SwipeDirection = 'vertical' | 'horizontal';
 
-type ReplaceAnimation = "pop" | "push";
+type ReplaceAnimation = 'pop' | 'push';
+
+type ScrollEdgeEffect = 'automatic' | 'hard' | 'soft' | 'hidden';
+
+type OptionalBoolean = 'undefined' | 'false' | 'true';
 
 export interface NativeProps extends ViewProps {
   onAppear?: DirectEventHandler<ScreenEvent>;
   onDisappear?: DirectEventHandler<ScreenEvent>;
   onDismissed?: DirectEventHandler<ScreenDismissedEvent>;
-  onNativeDismissCancelled?: DirectEventHandler<ScreenDismissedEvent>; // not supported
+  onNativeDismissCancelled?: DirectEventHandler<ScreenDismissedEvent>;
   onWillAppear?: DirectEventHandler<ScreenEvent>;
   onWillDisappear?: DirectEventHandler<ScreenEvent>;
   onHeaderHeightChange?: DirectEventHandler<HeaderHeightChangeEvent>;
-  onTransitionProgress?: DirectEventHandler<TransitionProgressEvent>; // not supported
-  onGestureCancel?: DirectEventHandler<ScreenEvent>; // not supported
+  onTransitionProgress?: DirectEventHandler<TransitionProgressEvent>;
+  onGestureCancel?: DirectEventHandler<ScreenEvent>;
   onHeaderBackButtonClicked?: DirectEventHandler<ScreenEvent>;
   onSheetDetentChanged?: DirectEventHandler<SheetDetentChangedEvent>;
+  screenId?: WithDefault<string, ''>;
   sheetAllowedDetents?: number[];
   sheetLargestUndimmedDetent?: WithDefault<Int32, -1>;
   sheetGrabberVisible?: WithDefault<boolean, false>;
@@ -85,12 +91,12 @@ export interface NativeProps extends ViewProps {
   sheetExpandsWhenScrolledToEdge?: WithDefault<boolean, false>;
   sheetInitialDetent?: WithDefault<Int32, 0>;
   sheetElevation?: WithDefault<Int32, 24>;
-  customAnimationOnSwipe?: boolean; // ios specific
-  fullScreenSwipeEnabled?: boolean; // ios specific
+  customAnimationOnSwipe?: boolean;
+  fullScreenSwipeEnabled?: WithDefault<OptionalBoolean, 'undefined'>;
   fullScreenSwipeShadowEnabled?: WithDefault<boolean, true>;
-  homeIndicatorHidden?: boolean; // ios specific
-  preventNativeDismiss?: boolean; // ios specific
-  gestureEnabled?: WithDefault<boolean, true>; // ios specific
+  homeIndicatorHidden?: boolean;
+  preventNativeDismiss?: boolean;
+  gestureEnabled?: WithDefault<boolean, true>;
   statusBarColor?: ColorValue;
   statusBarHidden?: boolean;
   screenOrientation?: string;
@@ -98,20 +104,23 @@ export interface NativeProps extends ViewProps {
   statusBarStyle?: string;
   statusBarTranslucent?: boolean;
   gestureResponseDistance?: GestureResponseDistanceType;
-  stackPresentation?: WithDefault<StackPresentation, "push">;
-  stackAnimation?: WithDefault<StackAnimation, "default">;
+  stackPresentation?: WithDefault<StackPresentation, 'push'>;
+  stackAnimation?: WithDefault<StackAnimation, 'default'>;
   transitionDuration?: WithDefault<Int32, 500>;
-  replaceAnimation?: WithDefault<ReplaceAnimation, "pop">;
-  swipeDirection?: WithDefault<SwipeDirection, "horizontal">;
+  replaceAnimation?: WithDefault<ReplaceAnimation, 'pop'>;
+  swipeDirection?: WithDefault<SwipeDirection, 'horizontal'>;
   hideKeyboardOnSwipe?: boolean;
   activityState?: WithDefault<Float, -1.0>;
-  screenId?: WithDefault<string, ''>;
   navigationBarColor?: ColorValue;
   navigationBarTranslucent?: boolean;
   navigationBarHidden?: boolean;
   nativeBackButtonDismissalEnabled?: boolean;
+  bottomScrollEdgeEffect?: WithDefault<ScrollEdgeEffect, 'automatic'>;
+  leftScrollEdgeEffect?: WithDefault<ScrollEdgeEffect, 'automatic'>;
+  rightScrollEdgeEffect?: WithDefault<ScrollEdgeEffect, 'automatic'>;
+  topScrollEdgeEffect?: WithDefault<ScrollEdgeEffect, 'automatic'>;
 }
 
-export default codegenNativeComponent<NativeProps>("RNSScreen", {
+export default codegenNativeComponent<NativeProps>('RNSScreen', {
   interfaceOnly: true,
 });

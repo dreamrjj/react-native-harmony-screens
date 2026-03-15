@@ -3,7 +3,8 @@
     "baseUrl": ".",
     "paths": {
       "react-native-screens": ["src"],
-      "react-native-screens/*": ["src/*"]
+      "react-native-screens/*": ["src/*"],
+      "react-native-screens/types": ["./node_modules/react-native-screens/src/types"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
