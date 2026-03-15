@@ -6,7 +6,7 @@ import {
   HeaderBarButtonItemWithMenu,
   ScreenStackHeaderConfigProps,
   ScreenStackHeaderSubviewProps,
-} from 'react-native-screens/src/types';
+} from '../types';
 import {
   Image,
   ImageProps,
@@ -35,73 +35,76 @@ export const ScreenStackHeaderConfig = React.forwardRef<
   const { headerLeftBarButtonItems, headerRightBarButtonItems } = props;
 
   const preparedHeaderLeftBarButtonItems =
-    headerLeftBarButtonItems && isHeaderBarButtonsAvailableForCurrentPlatform
+    // @ts-ignore
+    headerLeftBarButtonItems && (isHeaderBarButtonsAvailableForCurrentPlatform || Platform.OS === 'harmony')
       ? prepareHeaderBarButtonItems(headerLeftBarButtonItems, 'left')
       : undefined;
   const preparedHeaderRightBarButtonItems =
-    headerRightBarButtonItems && isHeaderBarButtonsAvailableForCurrentPlatform
+    // @ts-ignore
+    headerRightBarButtonItems && (isHeaderBarButtonsAvailableForCurrentPlatform || Platform.OS === 'harmony')
       ? prepareHeaderBarButtonItems(headerRightBarButtonItems, 'right')
       : undefined;
   const hasHeaderBarButtonItems =
-    isHeaderBarButtonsAvailableForCurrentPlatform &&
+    // @ts-ignore
+    (isHeaderBarButtonsAvailableForCurrentPlatform || Platform.OS === 'harmony') &&
     (preparedHeaderLeftBarButtonItems?.length ||
       preparedHeaderRightBarButtonItems?.length);
 
   // Handle bar button item presses
   const onPressHeaderBarButtonItem = hasHeaderBarButtonItems
     ? (event: NativeSyntheticEvent<{ buttonId: string }>) => {
-        const pressedItem = [
-          ...(preparedHeaderLeftBarButtonItems ?? []),
-          ...(preparedHeaderRightBarButtonItems ?? []),
-        ].find(
-          item =>
-            item &&
-            'onPress' in item &&
-            item.buttonId === event.nativeEvent.buttonId,
-        );
-        if (pressedItem && 'onPress' in pressedItem && pressedItem.onPress) {
-          pressedItem.onPress();
-        }
+      const pressedItem = [
+        ...(preparedHeaderLeftBarButtonItems ?? []),
+        ...(preparedHeaderRightBarButtonItems ?? []),
+      ].find(
+        item =>
+          item &&
+          'onPress' in item &&
+          item.buttonId === event.nativeEvent.buttonId,
+      );
+      if (pressedItem && 'onPress' in pressedItem && pressedItem.onPress) {
+        pressedItem.onPress();
       }
+    }
     : undefined;
 
   // Handle bar button menu item presses by deep-searching nested menus
   const onPressHeaderBarButtonMenuItem = hasHeaderBarButtonItems
     ? (event: NativeSyntheticEvent<{ menuId: string }>) => {
-        // Recursively search menu tree
-        const findInMenu = (
-          menu: HeaderBarButtonItemWithMenu['menu'],
-          menuId: string,
-        ): HeaderBarButtonItemMenuAction | undefined => {
-          for (const item of menu.items) {
-            if ('items' in item) {
-              // submenu: recurse
-              const found = findInMenu(item, menuId);
-              if (found) {
-                return found;
-              }
-            } else if ('menuId' in item && item.menuId === menuId) {
-              return item;
+      // Recursively search menu tree
+      const findInMenu = (
+        menu: HeaderBarButtonItemWithMenu['menu'],
+        menuId: string,
+      ): HeaderBarButtonItemMenuAction | undefined => {
+        for (const item of menu.items) {
+          if ('items' in item) {
+            // submenu: recurse
+            const found = findInMenu(item, menuId);
+            if (found) {
+              return found;
             }
+          } else if ('menuId' in item && item.menuId === menuId) {
+            return item;
           }
-          return undefined;
-        };
+        }
+        return undefined;
+      };
 
-        // Check each bar-button item with a menu
-        const allItems = [
-          ...(preparedHeaderLeftBarButtonItems ?? []),
-          ...(preparedHeaderRightBarButtonItems ?? []),
-        ];
-        for (const item of allItems) {
-          if (item && 'menu' in item && item.menu) {
-            const action = findInMenu(item.menu, event.nativeEvent.menuId);
-            if (action) {
-              action.onPress();
-              return;
-            }
+      // Check each bar-button item with a menu
+      const allItems = [
+        ...(preparedHeaderLeftBarButtonItems ?? []),
+        ...(preparedHeaderRightBarButtonItems ?? []),
+      ];
+      for (const item of allItems) {
+        if (item && 'menu' in item && item.menu) {
+          const action = findInMenu(item.menu, event.nativeEvent.menuId);
+          if (action) {
+            action.onPress();
+            return;
           }
         }
       }
+    }
     : undefined;
 
   return (
@@ -130,7 +133,7 @@ export const ScreenStackHeaderBackButtonImage = (
 
 export const ScreenStackHeaderRightView = (
   props: ScreenStackHeaderSubviewProps & ViewProps,
-  ): React.ReactElement => {
+): React.ReactElement => {
   const { style, ...rest } = props;
 
   return (
@@ -144,7 +147,7 @@ export const ScreenStackHeaderRightView = (
 
 export const ScreenStackHeaderLeftView = (
   props: ScreenStackHeaderSubviewProps & ViewProps,
-  ): React.ReactElement => {
+): React.ReactElement => {
   const { style, ...rest } = props;
 
   return (
@@ -170,7 +173,7 @@ export const ScreenStackHeaderCenterView = (props: ViewProps): React.ReactElemen
 
 export const ScreenStackHeaderSearchBarView = (
   props: ViewProps,
-  ): React.ReactElement => (
+): React.ReactElement => (
   <ScreenStackHeaderSubview
     {...props}
     type="searchBar"

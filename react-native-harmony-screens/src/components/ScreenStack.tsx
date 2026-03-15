@@ -7,8 +7,8 @@ import {
   GestureProviderProps,
   GoBackGesture,
   ScreenStackProps,
-} from 'react-native-screens/src/types';
-import { GHContext, RNSScreensRefContext } from 'react-native-screens/src/contexts';
+} from '../types';
+import { GHContext, RNSScreensRefContext } from '../contexts';
 import warnOnce from 'warn-once';
 
 // Native components
