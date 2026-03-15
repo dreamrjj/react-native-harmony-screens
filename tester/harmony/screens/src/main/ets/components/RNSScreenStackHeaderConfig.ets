@@ -39,9 +39,7 @@ export struct RNSScreenStackHeaderConfig {
   aboutToAppear() {
     this.eventEmitter = new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.tag)
     this.descriptor = this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderConfigDescriptor>(this.tag)
-    console.info(`RNSScreenStackHeaderConfig onDescriptorChange descriptor:${JSON.stringify(this.descriptor)}`)
     const headerLeftBarButtonItems = this.descriptor.rawProps['headerLeftBarButtonItems'] as object[] | undefined
-    console.info(`RNSScreenStackHeaderConfig onDescriptorChange headerLeftBarButtonItems:${JSON.stringify(headerLeftBarButtonItems)}`)
     this.cleanUpCallbacks.push(this.ctx.descriptorRegistry.subscribeToDescriptorChanges(this.tag,
       (newDescriptor) => {
         this.descriptor = (newDescriptor as RNSScreenStackHeaderConfigDescriptor)

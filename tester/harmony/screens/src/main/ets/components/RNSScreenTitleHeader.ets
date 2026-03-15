@@ -26,6 +26,7 @@ import { RNC } from '../generated/ts';
 import { RNComponentContext, } from '@rnoh/react-native-openharmony';
 import { RNSScreenStackHeaderConfigDescriptor } from './RNSScreenStackHeaderConfig';
 import { RNSScreenStackHeaderSubview, RNSScreenStackHeaderSubviewDescriptor } from './RNSScreenStackHeaderSubview';
+import { RNSSearchBarDescriptor } from './RNSSearchBar';
 
 interface GeneratedTypeLiteralInterface_1 {
   type: string;
@@ -120,10 +121,9 @@ export struct RNSScreenTitleHeader {
     if (!!!this.screenStackHeaderConfigTag) {
       return;
     }
-    this.eventEmitter = new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.tag)
+    this.eventEmitter = new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.screenStackHeaderConfigTag)
     this.descriptor =
       this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderConfigDescriptor>(this.screenStackHeaderConfigTag)
-    console.info(`RNSScreenTitleHeader onDescriptorChange descriptor:${JSON.stringify(this.descriptor)}`)
     this.cleanUpCallbacks.push(this.ctx.descriptorRegistry.subscribeToDescriptorChanges(this.screenStackHeaderConfigTag,
       (newDescriptor) => {
         this.descriptor = (newDescriptor as RNSScreenStackHeaderConfigDescriptor)
@@ -254,12 +254,10 @@ export struct RNSScreenTitleHeader {
     if (this.headerLeftBarButtonItemsValue !== headerLeftBarButtonItems) {
       this.headerLeftBarButtonItemsValue = headerLeftBarButtonItems;
     }
-    console.info(`RNSScreenTitleHeader headerLeftBarButtonItemsValue:${JSON.stringify(this.headerLeftBarButtonItemsValue)}`)
     let headerRightBarButtonItems: object[] | undefined = this.descriptor.rawProps["headerRightBarButtonItems"];
     if (this.headerRightBarButtonItemsValue !== headerRightBarButtonItems) {
       this.headerRightBarButtonItemsValue = headerRightBarButtonItems;
     }
-    console.info(`RNSScreenTitleHeader headerRightBarButtonItemsValue:${JSON.stringify(this.headerRightBarButtonItemsValue)}`)
     this.isTranslate = hasTransparency(this.backgroundColorValue);
     this.blurEffectConvert();
 
@@ -302,7 +300,6 @@ export struct RNSScreenTitleHeader {
       .focusable(!item.disabled)
       .onClick(() => {
         if (!item.disabled) {
-          console.info(`RNSScreenTitleHeader buttonId:${item.buttonId}`)
           this.eventEmitter?.emit('onPressHeaderBarButtonItem', {
             buttonId: item.buttonId
           })
@@ -331,7 +328,6 @@ export struct RNSScreenTitleHeader {
                         ForEach(item.menu.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
                           MenuItem({ content: menuItem.label })
                             .onClick(() => {
-                              console.info(`RNSScreenTitleHeader menuId:${menuItem.menuId}`)
                               this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
                                 menuId: menuItem.menuId
                               })
@@ -372,7 +368,6 @@ export struct RNSScreenTitleHeader {
                           MenuItem({ content: menuItem.label })
                             .onClick(() => {
                               if (item.onPress && !item.disabled) {
-                                console.info(`RNSScreenTitleHeader menuId:${menuItem.menuId}`)
                                 this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
                                   menuId: menuItem.menuId
                                 })
