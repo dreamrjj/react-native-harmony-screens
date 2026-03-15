@@ -112,6 +112,7 @@ export interface NativeProps extends ViewProps {
   navigationBarTranslucent?: boolean;
   navigationBarHidden?: boolean;
   nativeBackButtonDismissalEnabled?: boolean;
+  accessibilityContainerViewIsModal?: WithDefault<boolean, true>;
 }
 
 export default codegenNativeComponent<NativeProps>("RNSModalScreen", {
