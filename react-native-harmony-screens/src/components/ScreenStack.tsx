@@ -19,7 +19,7 @@ import ScreenStackNativeComponent, {
 const assertGHProvider = (
   ScreenGestureDetector: (
     props: PropsWithChildren<GestureProviderProps>,
-  ) => React.JSX.Element,
+  ) => React.ReactElement,
   goBackGesture: GoBackGesture | undefined,
 ) => {
   const isGestureDetectorProviderNotDetected =

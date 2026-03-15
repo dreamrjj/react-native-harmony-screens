@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { Animated, View, Platform, NativeSyntheticEvent } from "react-native";
 
@@ -21,7 +23,15 @@ import ScreenNativeComponent, {
 import ModalScreenNativeComponent, {
   NativeProps as ModalScreenNativeComponentProps,
 }  from "../specs/ModalScreenNativeComponent";
-import { usePrevious } from 'react-native-screens/src/components/helpers/usePrevious';
+import { usePrevious } from './helpers/usePrevious';
+import {
+  SHEET_DIMMED_ALWAYS,
+  resolveSheetAllowedDetents,
+  resolveSheetInitialDetentIndex,
+  resolveSheetLargestUndimmedDetent,
+} from './helpers/sheet';
+import { parseBooleanToOptionalBooleanNativeProp } from '../utils';
+
 type NativeProps = ScreenNativeComponentProps | ModalScreenNativeComponentProps;
 const AnimatedNativeScreen = Animated.createAnimatedComponent(
   ScreenNativeComponent,
@@ -37,126 +47,19 @@ interface ViewConfig extends View {
   viewConfig: {
     validAttributes: {
       style: {
-        display:  boolean | null;
+        display: boolean | null;
       };
     };
   };
   _viewConfig: {
     validAttributes: {
       style: {
-        display:  boolean | null;
+        display: boolean | null;
       };
     };
   };
 }
 
-// This value must be kept in sync with native side.
-const SHEET_FIT_TO_CONTENTS = [-1];
-const SHEET_COMPAT_LARGE = [1.0];
-const SHEET_COMPAT_MEDIUM = [0.5];
-const SHEET_COMPAT_ALL = [0.5, 1.0];
-const SHEET_DIMMED_ALWAYS = -1;
-// const SHEET_DIMMED_NEVER = 9999;
-function assertDetentsArrayIsSorted(array: number[]) {
-  for (let i = 1; i < array.length; i++) {
-    if (array[i - 1] > array[i]) {
-      throw new Error(
-        '[RNScreens] The detent array is not sorted in ascending order!',
-      );
-    }
-  }
-}
-
-// These exist to transform old 'legacy' values used by the formsheet API to the new API shape.
-// We can get rid of it, once we get rid of support for legacy values: 'large', 'medium', 'all'.
-function resolveSheetAllowedDetents(
-  allowedDetentsCompat: ScreenProps['sheetAllowedDetents'],
-): number[] {
-  if (Array.isArray(allowedDetentsCompat)) {
-    if (Platform.OS === 'android' && allowedDetentsCompat.length > 3) {
-      if (__DEV__) {
-        console.warn(
-          '[RNScreens] Sheets API on Android do accept only up to 3 values. Any surplus value are ignored.',
-        );
-      }
-      allowedDetentsCompat = allowedDetentsCompat.slice(0, 3);
-    }
-    if (__DEV__) {
-      assertDetentsArrayIsSorted(allowedDetentsCompat);
-    }
-    return allowedDetentsCompat;
-  } else if (allowedDetentsCompat === 'fitToContents') {
-    return SHEET_FIT_TO_CONTENTS;
-  } else if (allowedDetentsCompat === 'large') {
-    return SHEET_COMPAT_LARGE;
-  } else if (allowedDetentsCompat === 'medium') {
-    return SHEET_COMPAT_MEDIUM;
-  } else if (allowedDetentsCompat === 'all') {
-    return SHEET_COMPAT_ALL;
-  } else {
-    // Safe default, only large detent is allowed.
-    return [1.0];
-  }
-}
-
-function resolveSheetLargestUndimmedDetent(
-  lud: ScreenProps['sheetLargestUndimmedDetentIndex'],
-  lastDetentIndex: number,
-): number {
-  if (typeof lud === 'number') {
-    if (!isIndexInClosedRange(lud, SHEET_DIMMED_ALWAYS, lastDetentIndex)) {
-      if (__DEV__) {
-        throw new Error(
-          "[RNScreens] Provided value of 'sheetLargestUndimmedDetentIndex' prop is out of bounds of 'sheetAllowedDetents' array.",
-        );
-      }
-      // Return default in production
-      return SHEET_DIMMED_ALWAYS;
-    }
-    return lud;
-  } else if (lud === 'last') {
-    return lastDetentIndex;
-  } else if (lud === 'none' || lud === 'all') {
-    return SHEET_DIMMED_ALWAYS;
-  } else if (lud === 'large') {
-    return 1;
-  } else if (lud === 'medium') {
-    return 0;
-  } else {
-    // Safe default, every detent is dimmed
-    return SHEET_DIMMED_ALWAYS;
-  }
-}
-
-function resolveSheetInitialDetentIndex(
-  index: ScreenProps['sheetInitialDetentIndex'],
-  lastDetentIndex: number,
-): number {
-  if (index === 'last') {
-    index = lastDetentIndex;
-  } else if (index == null) {
-    // Intentional check for undefined & null ^
-    index = 0;
-  }
-  if (!isIndexInClosedRange(index, 0, lastDetentIndex)) {
-    if (__DEV__) {
-      throw new Error(
-        "[RNScreens] Provided value of 'sheetInitialDetentIndex' prop is out of bounds of 'sheetAllowedDetents' array.",
-      );
-    }
-    // Return default in production
-    return 0;
-  }
-  return index;
-}
-
-function isIndexInClosedRange(
-  value: number,
-  lowerBound: number,
-  upperBound: number,
-): boolean {
-  return Number.isInteger(value) && value >= lowerBound && value <= upperBound;
-}
 export const InnerScreen = React.forwardRef<View, ScreenProps>(
   function InnerScreen(props, ref) {
     const innerRef = React.useRef<ViewConfig | null>(null);
@@ -190,8 +93,8 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
       sheetExpandsWhenScrolledToEdge = true,
       sheetElevation = 24,
       sheetInitialDetentIndex = 0,
-      screenId,
       // Other
+      screenId,
       stackPresentation,
       // Events for override
       onAppear,
@@ -212,16 +115,23 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
         sheetInitialDetentIndex,
         resolvedSheetAllowedDetents.length - 1,
       );
-      
-      // Due to how Yoga resolves layout, we need to have different components for modal nad non-modal screens
-      const AnimatedScreen =
-        Platform.OS === "android" ||
-        stackPresentation === undefined ||
-        stackPresentation === "push" ||
-        stackPresentation === "containedModal" ||
-        stackPresentation === "containedTransparentModal"
-          ? AnimatedNativeScreen
-          : AnimatedNativeModalScreen;
+
+      // Due to how Yoga resolves layout, we need to have different components for modal nad non-modal screens (there is a need for different
+      // shadow nodes).
+      const shouldUseModalScreenComponent = Platform.select({
+        ios: !(
+          stackPresentation === undefined ||
+          stackPresentation === 'push' ||
+          stackPresentation === 'containedModal' ||
+          stackPresentation === 'containedTransparentModal'
+        ),
+        android: false,
+        default: false,
+      });
+
+      const AnimatedScreen = shouldUseModalScreenComponent
+        ? AnimatedNativeModalScreen
+        : AnimatedNativeScreen;
 
       let {
         // Filter out active prop in this case because it is unused and
@@ -231,7 +141,9 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
         activityState,
         children,
         isNativeStack,
+        fullScreenSwipeEnabled,
         gestureResponseDistance,
+        scrollEdgeEffects,
         onGestureCancel,
         onHeaderHeightChange,
         style,
@@ -269,8 +181,8 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
             ...ref._viewConfig.validAttributes.style,
             display: null,
           };
-          setRef(ref);
         }
+        setRef(ref);
       };
 
       // RNOH patch: native header is not included into Yoga calculations,
@@ -325,6 +237,9 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
             onHeaderHeightChange={onHeaderHeightChangeHandler}
             sheetExpandsWhenScrolledToEdge={sheetExpandsWhenScrolledToEdge}
             sheetInitialDetent={resolvedSheetInitialDetentIndex}
+            fullScreenSwipeEnabled={parseBooleanToOptionalBooleanNativeProp(
+              fullScreenSwipeEnabled,
+            )}
             gestureResponseDistance={{
               start: gestureResponseDistance?.start ?? -1,
               end: gestureResponseDistance?.end ?? -1,
@@ -350,6 +265,10 @@ export const InnerScreen = React.forwardRef<View, ScreenProps>(
                     { useNativeDriver: true }
                   )
             }
+            bottomScrollEdgeEffect={scrollEdgeEffects?.bottom}
+            leftScrollEdgeEffect={scrollEdgeEffects?.left}
+            rightScrollEdgeEffect={scrollEdgeEffects?.right}
+            topScrollEdgeEffect={scrollEdgeEffects?.top}
           >
             {!isNativeStack ? ( // see comment of this prop in types.tsx for information why it is needed
               children
