@@ -2,7 +2,7 @@ import { Image, processColor } from 'react-native';
 import {
   HeaderBarButtonItem,
   HeaderBarButtonItemWithMenu,
-} from 'react-native-screens/src/types';
+} from '../../types';
 
 const prepareMenu = (
   menu: HeaderBarButtonItemWithMenu['menu'],

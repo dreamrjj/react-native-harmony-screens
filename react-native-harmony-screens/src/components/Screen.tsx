@@ -3,12 +3,12 @@
 import React from "react";
 import { Animated, View, Platform, NativeSyntheticEvent } from "react-native";
 
-import TransitionProgressContext from "react-native-screens/src/TransitionProgressContext";
-import DelayedFreeze from "react-native-screens/src/components/helpers/DelayedFreeze";
+import TransitionProgressContext from "../TransitionProgressContext";
+import DelayedFreeze from "../components/helpers/DelayedFreeze";
 import {
   HeaderHeightChangeEventType,
   ScreenProps,
-} from "react-native-screens/src/types";
+} from "../types";
 
 import {
   freezeEnabled,

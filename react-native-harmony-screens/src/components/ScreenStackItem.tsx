@@ -9,16 +9,16 @@ import {
 } from 'react-native';
 import warnOnce from 'warn-once';
 
-import DebugContainer from 'react-native-screens/src/components/DebugContainer';
+import DebugContainer from '../components/DebugContainer';
 import {
   ScreenProps,
   ScreenStackHeaderConfigProps,
   StackPresentationTypes,
-} from 'react-native-screens/src/types';
-import { ScreenStackHeaderConfig } from 'react-native-screens/src/components/ScreenStackHeaderConfig';
+} from '../types';
+import { ScreenStackHeaderConfig } from './ScreenStackHeaderConfig';
 import Screen from './Screen';
 import ScreenStack from './ScreenStack';
-import { RNSScreensRefContext } from 'react-native-screens/src/contexts';
+import { RNSScreensRefContext } from '../contexts';
 import { FooterComponent } from './ScreenFooter';
 import { SafeAreaViewProps } from './safe-area/SafeAreaView.types';
 import SafeAreaView from './safe-area/SafeAreaView';
