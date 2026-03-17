@@ -123,6 +123,7 @@ export struct RNSScreen {
   @State translateYValue: string = '0';
   @State opacityValue: number = 1;
   @State screenOrientation: string = 'default';
+  @State statusBarTranslucent: boolean = false;
   // 记录该页面最后一次下发到 window 的方向，避免重复设置与干扰其他页面
   private lastAppliedOrientation: number = -1;
   private appliedByThisScreen: boolean = false;
@@ -264,8 +265,8 @@ export struct RNSScreen {
       newStatusBarConfiguration.statusBarStyle === "inverted") {
       statusBarContentColor = "#E5FFFFFF"
     }
-    let statusBarTranslucentTmp: boolean = this.descriptor.rawProps["statusBarTranslucent"];
-    if (statusBarTranslucentTmp) {
+    this.statusBarTranslucent = this.descriptor.rawProps["statusBarTranslucent"];
+    if (this.statusBarTranslucent) {
       newStatusBarConfiguration.statusBarColor = "#00000000"
     } else {
       newStatusBarConfiguration.statusBarColor = statusBarColor;
@@ -288,12 +289,22 @@ export struct RNSScreen {
         }
       }
 
-      windowInstance.setWindowSystemBarProperties({
-        statusBarContentColor: statusBarContentColor,
-        // statusBarColor: this.statusBarConfiguration.statusBarColor,
-        enableStatusBarAnimation: this.statusBarConfiguration.statusBarAnimation,
-      });
+      if ((this.statusBarConfiguration.statusBarColor === undefined
+        && this.titleBarBackgroundColor === "#00000000")
+        && !this.statusBarTranslucent) {
+        this.statusBarConfiguration.statusBarColor = "#00000000"
+      } else if (this.titleBarBackgroundColor !== undefined && this.statusBarTranslucent !== undefined){
+        this.statusBarConfiguration.statusBarColor = this.titleBarBackgroundColor
+      }
+      // Avoid interface flickering and ensure consistent color of the header and status bar
+      setTimeout(() => {
+        windowInstance.setWindowSystemBarProperties({
+          statusBarContentColor: statusBarContentColor,
+          statusBarColor: this.statusBarConfiguration.statusBarColor,
+          enableStatusBarAnimation: this.statusBarConfiguration.statusBarAnimation,
+        }); }, this.statusBarTranslucent ? 500 : 0)
     }
+
     let navigationBarColor: string = this.descriptor.rawProps["navigationBarColor"];
     let navigationBarTranslucent: boolean = this.descriptor.rawProps["navigationBarTranslucent"];
     let navigationBarHidden: boolean = this.descriptor.rawProps["navigationBarHidden"];

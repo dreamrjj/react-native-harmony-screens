@@ -53,7 +53,7 @@ export struct RNSScreenTitleHeader {
   @State blueStyle: BlurStyle = BlurStyle.NONE;
   @State hintColor: string | undefined = undefined;
   @State isTranslate: boolean = false; // 背景色是否有alpha透明度
-  @State hideNavigationBar: boolean = true;
+  @State hideNavigationBar: boolean = false;
   @State isSearchActive: boolean = false;
 
   private cleanUpCallbacks: (() => void)[] = []

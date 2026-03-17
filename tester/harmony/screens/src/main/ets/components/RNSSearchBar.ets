@@ -202,7 +202,6 @@ export struct RNSSearchBar {
               .cancelButton({ style: CancelButtonStyle.CONSTANT, icon: { color: this.headerIconColor }})
               .type(this.type)
               .focusable(true)
-              // .autoCapitalizationMode(AutoCapitalizationMode.WORDS) // API 20生效
               .onChange((value: string) => {
                 this.text = value
                 this.eventEmitter!.emit("changeText", { text: value })
