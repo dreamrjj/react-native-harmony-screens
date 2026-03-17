@@ -27,10 +27,13 @@ import { RNComponentContext, } from '@rnoh/react-native-openharmony';
 import { RNSScreenStackHeaderConfigDescriptor } from './RNSScreenStackHeaderConfig';
 import { RNSScreenStackHeaderSubview, RNSScreenStackHeaderSubviewDescriptor } from './RNSScreenStackHeaderSubview';
 import { RNSSearchBarDescriptor } from './RNSSearchBar';
+import { obtainImageInfoFromPath } from '../utils/Utils';
+import { image } from '@kit.ImageKit';
+import { resourceManager } from '@kit.LocalizationKit';
 
 interface GeneratedTypeLiteralInterface_1 {
   type: string;
-  name: string;
+  imageSource: number;
 }
 
 interface GeneratedTypeLiteralInterface_2 {
@@ -50,20 +53,51 @@ interface GeneratedTypeLiteralInterface_3 {
   style?: GeneratedTypeLiteralInterface_4;
 }
 
+interface GeneratedTypeLiteralInterface_8 {
+  type: string;
+  name: string;
+}
+
 interface GeneratedTypeLiteralInterface_6 {
   label: string;
+  sfSymbolName?: string;
+  icon?: GeneratedTypeLiteralInterface_8;
+  items: GeneratedTypeLiteralInterface_9[];
   type: string;
-  onPress: () => void;
+  state?: string;
+  attributes?: string;
+  discoverabilityLabel?: string;
+  onPress?: () => void;
   menuId?: string;
 }
 
+interface GeneratedTypeLiteralInterface_9 {
+  label: string;
+  sfSymbolName?: string;
+  icon?: GeneratedTypeLiteralInterface_8;
+  state?: string;
+  attributes?: string;
+  discoverabilityLabel?: string;
+  onPress?: () => void;
+  menuId?: string;
+}
+
+interface GeneratedTypeLiteralInterface_7 {
+  width: number;
+  uri: string;
+  height: number;
+  scale: number;
+}
+
 interface GeneratedTypeLiteralInterface_5 {
+  label: string;
   items: GeneratedTypeLiteralInterface_6[];
 }
 
 interface BarButtonItem {
   label?: string;
   icon?: GeneratedTypeLiteralInterface_1;
+  imageSource?: GeneratedTypeLiteralInterface_7;
   labelStyle?: GeneratedTypeLiteralInterface_2;
   tintColor?: string;
   badge?: GeneratedTypeLiteralInterface_3;
@@ -76,6 +110,7 @@ interface BarButtonItem {
   changesSelectionAsPrimaryAction?: boolean;
   hidesSharedBackground?: boolean;
   buttonId?: string;
+  iconPixelMap?: image.PixelMap;
   onPress?: () => void;
 };
 
@@ -109,10 +144,13 @@ export struct RNSScreenTitleHeader {
   @State hintColor: string | undefined = undefined;
   @State headerLeftBarButtonItemsValue: object[] | undefined = []
   @State headerRightBarButtonItemsValue: object[] | undefined = []
+  @State newHeaderRightBarButtonItems: object[] = []
+  @State newBarButtonItem: BarButtonItem = {} as BarButtonItem
+  @State iconPixelMap: image.PixelMap | undefined = undefined
+  @State iconPixelMapArray: Map<string, image.PixelMap> = new Map();
   @State isTranslate: boolean = false; // 背景色是否有alpha透明度
   @State hideNavigationBar: boolean = true;
   @State isSearchActive: boolean = false;
-
   private cleanUpCallbacks: (() => void)[] = []
   public backBtnPressed: () => void = () => {
   }
@@ -121,9 +159,11 @@ export struct RNSScreenTitleHeader {
     if (!!!this.screenStackHeaderConfigTag) {
       return;
     }
-    this.eventEmitter = new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.screenStackHeaderConfigTag)
+    this.eventEmitter =
+      new RNC.RNSScreenStackHeaderConfig.EventEmitter(this.ctx.rnInstance, this.screenStackHeaderConfigTag)
     this.descriptor =
       this.ctx.descriptorRegistry.getDescriptor<RNSScreenStackHeaderConfigDescriptor>(this.screenStackHeaderConfigTag)
+    console.info(`RNSScreenTitleHeader descriptor:${JSON.stringify(this.descriptor)}`)
     this.cleanUpCallbacks.push(this.ctx.descriptorRegistry.subscribeToDescriptorChanges(this.screenStackHeaderConfigTag,
       (newDescriptor) => {
         this.descriptor = (newDescriptor as RNSScreenStackHeaderConfigDescriptor)
@@ -176,7 +216,8 @@ export struct RNSScreenTitleHeader {
     }
   }
 
-  updateState() {
+  async updateState() {
+    const rm = this.ctx.uiAbilityContext.resourceManager
     if (!this.descriptor) {
       return
     }
@@ -211,7 +252,7 @@ export struct RNSScreenTitleHeader {
     if (this.backTitle !== this.descriptor.rawProps["backTitle"]) {
       this.backTitle = this.descriptor.rawProps["backTitle"]
     }
-
+    console.info(`RNSScreenTitleHeader backTitle:${this.backTitle}`)
     if (this.backTitleFontFamily !== this.descriptor.rawProps["backTitleFontFamily"]) {
       this.backTitleFontFamily = this.descriptor.rawProps["backTitleFontFamily"]
     }
@@ -223,7 +264,7 @@ export struct RNSScreenTitleHeader {
     if (this.backTitleVisible !== this.descriptor.rawProps["backTitleVisible"]) {
       this.backTitleVisible = this.descriptor.rawProps["backTitleVisible"]
     }
-
+    console.info(`RNSScreenTitleHeader backTitleVisible:${this.backTitleVisible}`)
     if (this.hideBackButton !== this.descriptor.rawProps["hideBackButton"]) {
       this.hideBackButton = this.descriptor.rawProps["hideBackButton"]
     }
@@ -254,9 +295,18 @@ export struct RNSScreenTitleHeader {
     if (this.headerLeftBarButtonItemsValue !== headerLeftBarButtonItems) {
       this.headerLeftBarButtonItemsValue = headerLeftBarButtonItems;
     }
+    console.info(`RNSScreenTitleHeader headerLeftBarButtonItemsValue:${JSON.stringify(this.headerLeftBarButtonItemsValue)}`)
     let headerRightBarButtonItems: object[] | undefined = this.descriptor.rawProps["headerRightBarButtonItems"];
     if (this.headerRightBarButtonItemsValue !== headerRightBarButtonItems) {
       this.headerRightBarButtonItemsValue = headerRightBarButtonItems;
+    }
+    if (this.headerRightBarButtonItemsValue && this.headerRightBarButtonItemsValue.length > 0) {
+      // 清空数组，确保每次更新时都是从空数组开始
+      this.newHeaderRightBarButtonItems = [];
+      for (let i = 0; i < this.headerRightBarButtonItemsValue?.length; i++) {
+        console.info(`RNSScreenTitleHeader headerLeftBarButtonItemsValue**:${JSON.stringify(this.headerRightBarButtonItemsValue[i])}`)
+        await this.getIconPixelMap(rm, this.headerRightBarButtonItemsValue[i])
+      }
     }
     this.isTranslate = hasTransparency(this.backgroundColorValue);
     this.blurEffectConvert();
@@ -274,7 +324,58 @@ export struct RNSScreenTitleHeader {
       }
     }
   }
-  
+
+  async getIconPixelMap(rm: resourceManager.ResourceManager, item: BarButtonItem) {
+    console.info(`RNSScreenTitleHeader item:${JSON.stringify(item)}`)
+    let uri: string | undefined = undefined
+    if (item.imageSource && item.imageSource?.uri) {
+      uri = typeof item.imageSource.uri === 'string' ? item.imageSource.uri :
+        String(item.imageSource.uri)
+    }
+    console.info(`RNSScreenTitleHeader uri:${uri}`)
+    console.info(`RNSScreenTitleHeader uri buttonId:${item?.buttonId}`)
+    try {
+      if (uri) {
+        const info = await obtainImageInfoFromPath(rm, uri);
+        console.info(`RNSScreenTitleHeader info:${JSON.stringify(info)}`)
+        const iconPixelMap = await info.imageSource.createPixelMap();
+        console.info(`RNSScreenTitleHeader iconPixelMap:${iconPixelMap}`)
+        // 创建一个新对象，保留原有属性并添加iconPixelMap
+        const updatedItem: BarButtonItem = {
+          label: item.label,
+          icon: item.icon,
+          imageSource: item.imageSource,
+          labelStyle: item.labelStyle,
+          tintColor: item.tintColor,
+          badge: item.badge,
+          disabled: item.disabled,
+          variant: item.variant,
+          menu: item.menu,
+          spacing: item.spacing,
+          sharesBackground: item.sharesBackground,
+          selected: item.selected,
+          changesSelectionAsPrimaryAction: item.changesSelectionAsPrimaryAction,
+          hidesSharedBackground: item.hidesSharedBackground,
+          buttonId: item.buttonId,
+          iconPixelMap: iconPixelMap,
+          onPress: item.onPress
+        };
+        console.info(`RNSScreenTitleHeader updatedItem iconPixelMap exists:${updatedItem.iconPixelMap !== undefined &&
+          updatedItem.iconPixelMap !== null}`)
+        console.info(`RNSScreenTitleHeader updatedItem label:${updatedItem.label}`)
+        this.newHeaderRightBarButtonItems.push(updatedItem)
+      } else {
+        // 直接添加原item，不做修改
+        this.newHeaderRightBarButtonItems.push(item)
+      }
+      console.info(`RNSScreenTitleHeader newHeaderRightBarButtonItems length:${this.newHeaderRightBarButtonItems.length}`)
+    } catch (e) {
+      console.error('RNSBottomTabs icon obtainImageInfoFromPath error: ' + e)
+      // 出错时直接添加原item
+      this.newHeaderRightBarButtonItems.push(item)
+    }
+  }
+
   // 转换字体权重
   getFontWeight(weight?: string): number {
     switch (weight) {
@@ -291,117 +392,167 @@ export struct RNSScreenTitleHeader {
 
   @Builder
   renderButton(item: BarButtonItem) {
-    Button(item.label || '')
-      .height(20)
-      .fontSize(item.labelStyle?.fontSize || 14)
-      .fontWeight(this.getFontWeight(item.labelStyle?.fontWeight))
-      .fontColor(item.labelStyle?.color ? item.labelStyle.color : item.tintColor || Color.Black)
-      .fontFamily(item.labelStyle?.fontFamily || 'sans-serif')
-      .focusable(!item.disabled)
-      .onClick(() => {
-        if (!item.disabled) {
-          this.eventEmitter?.emit('onPressHeaderBarButtonItem', {
-            buttonId: item.buttonId
-          })
+    Button({ type: ButtonType.Capsule, stateEffect: true }) {
+      Row() {
+        if (item.iconPixelMap) {
+          Image(item.iconPixelMap)
+            .width(24)
+        }
+        Text(item.label || '')
+          .fontSize(item.labelStyle?.fontSize || 16)
+          .textAlign(TextAlign.Center)
+          .fontWeight(this.getFontWeight(item.labelStyle?.fontWeight))
+          .fontColor(item.labelStyle?.color ? item.labelStyle.color : item.tintColor || Color.Black)
+          .fontFamily(item.labelStyle?.fontFamily || 'sans-serif')
+      }
+      .padding(10)
+      .alignItems(VerticalAlign.Center)
+      .justifyContent(FlexAlign.Center)
+    }
+    .backgroundColor('#F1EDEE')
+    .onClick(() => {
+      if (!item.disabled) {
+        this.eventEmitter?.emit('onPressHeaderBarButtonItem', {
+          buttonId: item.buttonId
+        })
+      }
+    })
+    .bindMenu(this.menuBuilder(item))
+  }
+
+  @Builder
+  menuBuilder(item: BarButtonItem) {
+    Menu() {
+      ForEach(item?.menu?.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
+        if (menuItem.type == 'action') {
+          MenuItem({ content: menuItem.label })
+            .onClick(() => {
+              this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
+                menuId: menuItem.menuId
+              })
+            });
+        } else if (menuItem.type === 'submenu' && menuItem.items) {
+          MenuItemGroup() {
+            MenuItem({
+              content: menuItem.label,
+              builder: (): void => this.SubMenu(menuItem.items)
+            })
+          }
         }
       });
+    }
+  }
+@Builder
+  SubMenu(items:GeneratedTypeLiteralInterface_9[]){
+    Menu() {
+      ForEach(items, (menuItem: GeneratedTypeLiteralInterface_9) => {
+        MenuItem({ content: menuItem.label })
+          .onClick(() => {
+            this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
+              menuId: menuItem.menuId
+            })
+          });
+      });
+    }
   }
 
   build() {
     RelativeContainer() {
       if (this.screenStackHeaderConfigTag) {
         Stack() {
-          if ((this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0 ||
-            this.headerRightBarButtonItemsValue && this.headerRightBarButtonItemsValue?.length > 0)) {
+          if (this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0 ||
+            this.newHeaderRightBarButtonItems && this.newHeaderRightBarButtonItems?.length > 0) {
             Row() {
-              Row({
-                space: 10,
-              }) {
-                if (this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0) {
-                  ForEach(this.headerLeftBarButtonItemsValue, (item: BarButtonItem, index: number) => {
-                    if (item.spacing) {
-                      // 处理间距项
-                      Blank().width(item.spacing);
-                    } else if (item.menu) {
-                      // 处理带菜单的按钮
-                      Menu() {
-                        ForEach(item.menu.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
-                          MenuItem({ content: menuItem.label })
-                            .onClick(() => {
-                              this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
-                                menuId: menuItem.menuId
-                              })
-                            });
-                        });
-                      }
-                    } else if (item.badge) {
-                      // 处理带徽章的按钮
-                      Badge({
-                        count: parseInt(item.badge.value),
-                        style: {
-                          color: item.badge.style?.color || Color.White,
-                          badgeColor: item.badge.style?.backgroundColor || Color.Red
-                        }
-                      }) {
-                        this.renderButton(item);
-                      }
-                    } else {
-                      // 处理普通按钮
-                      this.renderButton(item);
-                    }
-                  });
-                }
-
-                Text(this.nativeTitleText)
-                  .height("100%")
-                  .fontSize(16)
-
-                if (this.headerRightBarButtonItemsValue && this.headerRightBarButtonItemsValue?.length > 0) {
-                  ForEach(this.headerRightBarButtonItemsValue, (item: BarButtonItem, index: number) => {
-                    if (item.spacing) {
-                      // 处理间距项
-                      Blank().width(item.spacing);
-                    } else if (item.menu) {
-                      // 处理带菜单的按钮
-                      Menu() {
-                        ForEach(item.menu.items, (menuItem: GeneratedTypeLiteralInterface_6) => {
-                          MenuItem({ content: menuItem.label })
-                            .onClick(() => {
-                              if (item.onPress && !item.disabled) {
-                                this.eventEmitter?.emit('onPressHeaderBarButtonMenuItem', {
-                                  menuId: menuItem.menuId
-                                })
-                              }
-                            });
-                        });
-                      }
-                      .bindMenu();
-                    } else if (item.badge) {
-                      // 处理带徽章的按钮
-                      Badge({
-                        count: parseInt(item.badge.value),
-                        style: {
-                          color: item.badge.style?.color || Color.White,
-                          badgeColor: item.badge.style?.backgroundColor || Color.Red
-                        }
-                      }) {
-                        this.renderButton(item);
-                      }
-                    } else {
-                      // 处理普通按钮
-                      this.renderButton(item);
-                    }
-                  });
+              Row() {
+                SymbolGlyph($r('sys.symbol.arrow_left')).fontSize(26).fontColor([this.hintColor])
+                if (this.backTitleVisible) {
+                  Text(this.backTitle ? this.backTitle : '')
+                    .fontFamily(this.backTitleFontFamily)
+                    .fontSize(this.backTitleFontSize ? this.backTitleFontSize : 18)
+                    .fontColor(this.hintColor)
+                    .margin({
+                      left: this.hideBackButton ? 0 : 5,
+                      right: (this.backTitleVisible && this.backTitle) ? 5 : 0
+                    })
                 }
               }
-              .width('100%')
-              .padding(10)
+              .height(56)
+              .onClick(() => {
+                if (this.backBtnPressed) {
+                  this.backBtnPressed();
+                }
+              })
+
+              if (this.headerLeftBarButtonItemsValue && this.headerLeftBarButtonItemsValue?.length > 0) {
+                Row() {
+                  ForEach(this.headerLeftBarButtonItemsValue, (item: BarButtonItem, index: number) => {
+                    if (item.badge) {
+                      // 处理带徽章的按钮
+                      Badge({
+                        count: parseInt(item.badge.value),
+                        style: {
+                          color: item.badge.style?.color || Color.White,
+                          badgeColor: item.badge.style?.backgroundColor || Color.Red
+                        }
+                      }) {
+                        this.renderButton(item)
+                      }
+                    } else {
+                      // 处理普通按钮
+                      this.renderButton(item)
+                    }
+                  });
+                }
+                .width('35%')
+                .height('100%')
+                .alignItems(VerticalAlign.Center)
+                .justifyContent(FlexAlign.Start)
+              } else {
+                Blank()
+              }
+              Column() {
+                Text(this.nativeTitleText)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .maxLines(1)
+                  .fontSize(18)
+                  .textAlign(TextAlign.Center)
+              }
               .justifyContent(FlexAlign.Center)
+              .width(120)
+              .height('100%')
+
+              if (this.newHeaderRightBarButtonItems && this.newHeaderRightBarButtonItems?.length > 0) {
+                Row({ space: 0 }) {
+                  ForEach(this.newHeaderRightBarButtonItems, (item: BarButtonItem, index: number) => {
+                    if (item.badge) {
+                      // 处理带徽章的按钮
+                      Badge({
+                        count: parseInt(item.badge.value),
+                        style: {
+                          color: item.badge.style?.color || Color.White,
+                          badgeColor: item.badge.style?.backgroundColor || Color.Red
+                        }
+                      }) {
+                        this.renderButton(item)
+                      }
+                    } else {
+                      // 处理普通按钮
+                      this.renderButton(item)
+                    }
+                  });
+                }
+                .width('35%')
+                .height('100%')
+                .alignItems(VerticalAlign.Center)
+                .justifyContent(FlexAlign.End)
+              } else {
+                Blank()
+              }
             }
             .width("100%")
             .height("100%")
             .layoutWeight(1)
-            .padding({ top: 25, left: 10, right: 10 })
+            .padding({ top: 25 })
             .hitTestBehavior(HitTestMode.Transparent)
           } else {
             Row() {
@@ -480,7 +631,7 @@ export struct RNSScreenTitleHeader {
           })
       }
     }
-    .onAppear(()=> {
+    .onAppear(() => {
       this.onPageShow();
     })
     .width("100%")
@@ -496,7 +647,7 @@ export struct RNSScreenTitleHeader {
   }
 }
 
-export function hasTransparency(color: string| undefined): boolean {
+export function hasTransparency(color: string | undefined): boolean {
   if (!!!color) {
     return false;
   }
